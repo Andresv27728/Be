@@ -1,4 +1,4 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express, { type Request, type Response, type NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { logger } from "./logger";
@@ -30,8 +30,8 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      // Use original log for API requests to keep them clean
-      log(logLine);
+      // Silenciar logs de API para simplificar la consola
+      // log(logLine);
     }
   });
 

@@ -70,29 +70,36 @@ class CustomLogger {
     }
   }
 
-  // Métodos de logging mejorados
+  // Métodos de logging simplificados - solo mostrar durante startup
   info(message: string, data?: any) {
-    console.log(this.formatMessage('info', message));
+    // Solo mostrar durante startup/banner, luego silenciar
+    if (message.includes('Servidor') || message.includes('Dashboard') || message.includes('puerto')) {
+      console.log(this.formatMessage('info', message));
+    }
     if (data) this.logger.info(data);
   }
 
   success(message: string, data?: any) {
-    console.log(this.formatMessage('success', message));
+    // Solo mostrar durante startup
+    if (message.includes('Servidor') || message.includes('Conectado') || message.includes('conectado')) {
+      console.log(this.formatMessage('success', message));
+    }
     if (data) this.logger.info(data);
   }
 
   warning(message: string, data?: any) {
-    console.log(this.formatMessage('warning', message));
+    // Silenciar warnings normales
     if (data) this.logger.warn(data);
   }
 
   error(message: string, error?: any) {
+    // Solo mostrar errores críticos
     console.log(this.formatMessage('error', message));
     if (error) this.logger.error(error);
   }
 
   debug(message: string, data?: any) {
-    console.log(this.formatMessage('debug', message));
+    // Silenciar debug completamente
     if (data) this.logger.debug(data);
   }
 
@@ -102,28 +109,26 @@ class CustomLogger {
     const typeText = type === 'incoming' ? 'Recibido' : 'Enviado';
     const fromFormatted = from.replace('@s.whatsapp.net', '').replace('@g.us', ' (Grupo)');
     
-    console.log(this.formatMessage('message', `${typeText} de ${fromFormatted}: ${content}`, arrow));
+    // Solo mostrar mensajes esenciales sin formato adicional
+    console.log(`${arrow} ${typeText} de ${fromFormatted}: ${content}`);
   }
 
   botCommand(command: string, from: string, success: boolean = true) {
-    const statusIcon = success ? '⚡' : '❌';
-    const fromFormatted = from.replace('@s.whatsapp.net', '').replace('@g.us', ' (Grupo)');
-    
-    console.log(this.formatMessage('command', `Comando "${command}" ejecutado por ${fromFormatted}`, statusIcon));
+    // No mostrar comandos ejecutados para simplificar la consola
   }
 
   botConnection(status: 'connecting' | 'connected' | 'disconnected' | 'error', details?: string) {
     const statusMessages = {
       connecting: 'Conectando a WhatsApp...',
-      connected: '¡Conectado exitosamente a WhatsApp!',
-      disconnected: 'Desconectado de WhatsApp',
-      error: 'Error de conexión'
+      connected: '¡Bot conectado exitosamente!',
+      disconnected: 'Bot desconectado',
+      error: 'Error de conexión del bot'
     };
     
     const message = details ? `${statusMessages[status]} - ${details}` : statusMessages[status];
-    const level = status === 'connected' ? 'success' : status === 'error' ? 'error' : 'info';
     
-    console.log(this.formatMessage(level, message, icons.connection));
+    // Solo mostrar estados importantes del bot
+    console.log(`🦈 ${message}`);
   }
 
   qrCode(message: string = 'Código QR generado para escanear') {

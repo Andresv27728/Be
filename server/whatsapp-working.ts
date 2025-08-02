@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import QRCode from 'qrcode';
 import * as fs from 'fs';
 import * as path from 'path';
+import pino from 'pino';
 import { botConfig, isValidCommand, extractCommand, formatCommandList } from './bot-config';
 import { logger } from './logger';
 
@@ -71,9 +72,10 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
       // Crear socket
       this.socket = makeWASocket({
         auth: state,
-        printQRInTerminal: true,
+        printQRInTerminal: false, // Desactivar QR en terminal
         browser: Browsers.macOS(botConfig.botInfo.name),
         generateHighQualityLinkPreview: true,
+        logger: pino({ level: 'silent' }), // Silenciar logs de Baileys
       });
 
       // Eventos de conexión
