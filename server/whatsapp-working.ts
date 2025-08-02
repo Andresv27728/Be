@@ -37,6 +37,10 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
   private baileys: any = null;
   private authDir = path.join(process.cwd(), 'auth_info');
   private pairingTimeout: NodeJS.Timeout | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectInterval = 5000; // 5 segundos
+  private isReconnecting = false;
 
   constructor() {
     super();
@@ -106,14 +110,16 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
           
           this.emit('connection_closed', { shouldReconnect });
 
-          if (shouldReconnect) {
-            setTimeout(() => this.connect(), 3000);
+          if (shouldReconnect && !this.isReconnecting) {
+            this.scheduleReconnect();
           }
         } else if (connection === 'open') {
           logger.botConnection('connected');
           this.isConnected = true;
           this.connectionMethod = 'qr';
           this.qrCode = null;
+          this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+          this.isReconnecting = false;
           
           const user = this.socket?.user;
           if (user) {
@@ -497,7 +503,63 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
       }
     }
   }
+
+  private scheduleReconnect(): void {
+    if (this.isReconnecting || this.reconnectAttempts >= this.maxReconnectAttempts) {
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        logger.error(`Máximo número de intentos de reconexión alcanzado (${this.maxReconnectAttempts})`);
+      }
+      return;
+    }
+
+    this.isReconnecting = true;
+    this.reconnectAttempts++;
+    
+    const delay = this.reconnectInterval * this.reconnectAttempts; // Backoff exponencial
+    logger.info(`Programando reconexión en ${delay / 1000} segundos (intento ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    
+    setTimeout(async () => {
+      try {
+        logger.info(`Iniciando reconexión (intento ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        await this.connect();
+      } catch (error) {
+        logger.error('Error durante la reconexión', error);
+        this.isReconnecting = false;
+        // Programar siguiente intento si no se ha alcanzado el máximo
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.scheduleReconnect();
+        }
+      }
+    }, delay);
+  }
+
+  // Método para forzar reconexión manual
+  public forceReconnect(): void {
+    logger.info('Forzando reconexión manual del bot');
+    this.reconnectAttempts = 0;
+    this.isReconnecting = false;
+    this.scheduleReconnect();
+  }
+
+  // Auto-inicialización del bot al instanciar
+  public async autoStart(): Promise<void> {
+    try {
+      logger.info('Iniciando bot automáticamente...');
+      await this.connect();
+    } catch (error) {
+      logger.error('Error en auto-inicio, programando reconexión', error);
+      this.scheduleReconnect();
+    }
+  }
 }
 
 const workingBot = new WorkingWhatsAppBotImpl();
+
+// Auto-iniciar el bot cuando se importa el módulo
+process.nextTick(() => {
+  workingBot.autoStart().catch(error => {
+    logger.error('Error en auto-inicio del bot', error);
+  });
+});
+
 export default workingBot;
