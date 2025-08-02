@@ -1,15 +1,21 @@
+# Configuración para Render.com
 services:
   - type: web
-    name: gawr-gura-bot
+    name: gawr-gura-whatsapp-bot
     env: node
-    plan: free
+    plan: starter
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    startCommand: node start.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-    healthCheckPath: /api/health
+      - key: ADMIN_PASSWORD
+        value: gawr2024
+    healthCheckPath: /
     autoDeploy: true
-    branch: main
+    disk:
+      name: auth-storage
+      mountPath: /opt/render/project/src/auth_info
+      sizeGB: 1

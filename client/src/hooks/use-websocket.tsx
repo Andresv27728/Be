@@ -108,6 +108,7 @@ export function useWebSocket() {
         break;
 
       case "stats_update":
+      case "statistics_update":
         queryClient.invalidateQueries({ queryKey: ["/api/statistics/today"] });
         break;
 

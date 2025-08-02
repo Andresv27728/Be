@@ -71,17 +71,79 @@ El bot acepta múltiples prefijos: `/`, `!`, `.`, `#`, `$`
 
 ## 🌐 Despliegue
 
-El proyecto está configurado para desplegarse en:
-- **Replit**: Listo para usar
-- **Vercel**: Configuración incluida
-- **Render**: Docker disponible
+### Archivo de Lanzamiento Principal
+El bot incluye un archivo `start.js` que maneja el despliegue automáticamente:
+```bash
+node start.js
+```
+
+### Plataformas Soportadas
+
+#### 🟢 Render (Recomendado)
+1. Conecta tu repositorio en [render.com](https://render.com)
+2. El archivo `render.yaml` configurará todo automáticamente
+3. Variables de entorno necesarias:
+   - `NODE_ENV=production`
+   - `ADMIN_PASSWORD=gawr2024`
+
+#### 🟡 Railway
+1. Conecta tu repositorio en [railway.app](https://railway.app)
+2. El archivo `railway.toml` configurará todo automáticamente
+3. Se auto-desplegará con el comando: `node start.js`
+
+#### 🟠 Vercel 
+1. Conecta tu repositorio en [vercel.com](https://vercel.com)
+2. El archivo `vercel.json` ya está configurado
+3. Funciona como aplicación serverless
+
+#### 🔵 Netlify
+1. Conecta tu repositorio en [netlify.com](https://netlify.com)
+2. El archivo `netlify.toml` configurará todo automáticamente
+
+#### 🖥️ Servidor VPS/Dedicado
+```bash
+# Clonar repositorio
+git clone <tu-repo>
+cd gawr-gura-bot
+
+# Instalar dependencias
+npm install
+
+# Compilar para producción
+npm run build
+
+# Iniciar bot
+node start.js
+```
+
+#### 🐳 Docker
+```bash
+# Construir imagen
+docker build -t gawr-gura-bot .
+
+# Ejecutar contenedor
+docker run -p 5000:5000 \
+  -e NODE_ENV=production \
+  -e ADMIN_PASSWORD=gawr2024 \
+  -v ./auth_info:/app/auth_info \
+  gawr-gura-bot
+```
 
 ## 📝 Scripts Disponibles
 
 - `npm run dev` - Desarrollo con recarga automática
 - `npm run build` - Construir para producción
 - `npm run start` - Ejecutar versión de producción
+- `node start.js` - **Lanzador principal del bot** (recomendado)
 - `npm run check` - Verificar tipos TypeScript
+
+### Variables de Entorno Importantes
+
+```bash
+NODE_ENV=production          # Modo de ejecución
+PORT=5000                   # Puerto del servidor
+ADMIN_PASSWORD=gawr2024     # Contraseña del dashboard
+```
 
 ## 🔒 Seguridad
 
@@ -90,9 +152,51 @@ El proyecto está configurado para desplegarse en:
 - Variables de entorno para secrets
 - Gitignore configurado para archivos sensibles
 
-## 🆘 Soporte
+## 🚀 Inicio Rápido para Despliegue
 
-Si tienes problemas:
-1. Verifica que todas las dependencias estén instaladas
-2. Revisa los logs en la consola
-3. El bot se reconecta automáticamente en caso de desconexión
+### Opción 1: Lanzamiento Automático
+```bash
+node start.js
+```
+
+### Opción 2: Despliegue en Render (Más fácil)
+1. Haz fork del repositorio
+2. Ve a [render.com](https://render.com) y conecta tu repo
+3. Render detectará automáticamente el `render.yaml`
+4. El bot se desplegará automáticamente
+
+### Opción 3: Despliegue Manual
+```bash
+git clone <tu-repositorio>
+cd gawr-gura-bot
+npm install
+npm run build
+NODE_ENV=production node start.js
+```
+
+## 🆘 Soporte y Solución de Problemas
+
+### Problemas Comunes
+
+**Error: tsx not found**
+```bash
+npm install
+```
+
+**Puerto ocupado**
+```bash
+export PORT=3000
+node start.js
+```
+
+**Bot no conecta**
+1. Verifica que auth_info/ tenga permisos de escritura
+2. Usa el código QR o PIN desde el dashboard
+3. Revisa los logs para errores específicos
+
+**Estadísticas no actualizan**
+- Las estadísticas se actualizan cada 10 segundos automáticamente
+- Verifica la conexión WebSocket en el navegador
+
+### Logs y Monitoreo
+El archivo `start.js` incluye logs detallados que te ayudarán a identificar problemas.

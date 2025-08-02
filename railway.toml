@@ -1,0 +1,13 @@
+# Configuración para Railway
+[build]
+  builder = "nixpacks"
+
+[deploy]
+  startCommand = "node start.js"
+  healthcheckPath = "/"
+  healthcheckTimeout = 100
+  restartPolicyMaxRetries = 10
+
+[environments.production.variables]
+  NODE_ENV = "production"
+  ADMIN_PASSWORD = "gawr2024"
