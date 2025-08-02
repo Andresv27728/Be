@@ -53,6 +53,81 @@ export const botConfig = {
       description: 'Muestra el menú principal',
       category: 'general',
     },
+    clima: {
+      aliases: ['weather', 'tiempo'],
+      description: 'Obtiene información del clima',
+      category: 'utilidades',
+    },
+    meme: {
+      aliases: ['memes', 'random'],
+      description: 'Genera un meme aleatorio',
+      category: 'diversión',
+    },
+    traducir: {
+      aliases: ['translate', 'tr'],
+      description: 'Traduce texto a otro idioma',
+      category: 'utilidades',
+    },
+    calc: {
+      aliases: ['calculadora', 'math'],
+      description: 'Calcula operaciones matemáticas',
+      category: 'utilidades',
+    },
+    perfil: {
+      aliases: ['profile', 'yo'],
+      description: 'Muestra tu perfil de usuario',
+      category: 'usuario',
+    },
+    registro: {
+      aliases: ['reg', 'register'],
+      description: 'Registra tu perfil en el bot',
+      category: 'usuario',
+    },
+    top: {
+      aliases: ['ranking', 'leaderboard'],
+      description: 'Muestra el ranking de usuarios',
+      category: 'usuario',
+    },
+    trivia: {
+      aliases: ['pregunta', 'quiz'],
+      description: 'Inicia un juego de trivia',
+      category: 'juegos',
+    },
+    adivinanza: {
+      aliases: ['guess', 'adivina'],
+      description: 'Juego de adivinanzas',
+      category: 'juegos',
+    },
+    bola8: {
+      aliases: ['8ball', 'pregunta'],
+      description: 'Pregunta a la bola mágica',
+      category: 'diversión',
+    },
+    cita: {
+      aliases: ['quote', 'frase'],
+      description: 'Muestra una cita inspiradora',
+      category: 'diversión',
+    },
+    gato: {
+      aliases: ['cat', 'kitty'],
+      description: 'Muestra una imagen de gato',
+      category: 'diversión',
+    },
+    perro: {
+      aliases: ['dog', 'puppy'],
+      description: 'Muestra una imagen de perro',
+      category: 'diversión',
+    },
+    musica: {
+      aliases: ['music', 'song'],
+      description: 'Busca información de música',
+      category: 'entretenimiento',
+    },
+    horario: {
+      aliases: ['time', 'hora'],
+      description: 'Muestra la hora actual',
+      category: 'utilidades',
+    },
   }
 };
 

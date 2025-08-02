@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { botConfig, isValidCommand, extractCommand, formatCommandList } from './bot-config';
+import { logger } from './logger';
 
 // Función para importar dinámicamente Baileys
 async function importBaileys() {
@@ -51,7 +52,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
     }
 
     try {
-      console.log('🦈 Conectando a WhatsApp...');
+      logger.botConnection('connecting');
       
       // Importar Baileys dinámicamente
       if (!this.baileys) {
@@ -76,7 +77,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
         const { connection, lastDisconnect, qr } = update;
         
         if (qr) {
-          console.log('📱 Código QR generado');
+          logger.qrCode('Código QR generado');
           
           try {
             this.qrCode = await QRCode.toDataURL(qr);
@@ -87,9 +88,9 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
               rawQR: qr
             });
             
-            console.log('✅ QR listo para escanear');
+            logger.success('QR listo para escanear');
           } catch (error) {
-            console.error('Error generando QR:', error);
+            logger.error('Error generando QR', error);
             this.emit('error', error);
           }
         }
@@ -98,7 +99,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
           const boom = lastDisconnect?.error as any;
           const shouldReconnect = boom?.output?.statusCode !== DisconnectReason.loggedOut;
           
-          console.log(`🔌 Conexión cerrada. Reconectar: ${shouldReconnect}`);
+          logger.botConnection('disconnected', `Reconectar: ${shouldReconnect}`);
           this.isConnected = false;
           this.connectionMethod = null;
           this.qrCode = null;
@@ -109,14 +110,14 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
             setTimeout(() => this.connect(), 3000);
           }
         } else if (connection === 'open') {
-          console.log('🦈 ¡Conectado exitosamente a WhatsApp!');
+          logger.botConnection('connected');
           this.isConnected = true;
           this.connectionMethod = 'qr';
           this.qrCode = null;
           
           const user = this.socket?.user;
           if (user) {
-            console.log(`📱 Usuario: ${user.name} (+${user.id?.replace('@s.whatsapp.net', '')})`);
+            logger.info(`Usuario conectado: ${user.name} (+${user.id?.replace('@s.whatsapp.net', '')})`);
           }
           
           this.emit('connected', { user });
@@ -139,7 +140,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
             
             const from = message.key.remoteJid;
             
-            console.log(`📥 Mensaje de ${from}: ${content}`);
+            logger.botMessage(from!, content, 'incoming');
             
             this.emit('message_received', {
               from,
@@ -157,7 +158,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
       });
 
     } catch (error) {
-      console.error('Error conectando:', error);
+      logger.error('Error conectando', error);
       this.emit('error', error);
       throw error;
     }
@@ -172,9 +173,9 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
       this.isConnected = false;
       this.connectionMethod = null;
       this.qrCode = null;
-      console.log('🛑 Desconectado de WhatsApp');
+      logger.botConnection('disconnected');
     } catch (error) {
-      console.error('Error desconectando:', error);
+      logger.error('Error desconectando', error);
       throw error;
     }
   }
@@ -226,7 +227,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
     }
 
     try {
-      console.log(`🔗 Solicitando código de vinculación para ${cleanNumber}`);
+      logger.info(`Solicitando código de vinculación para ${cleanNumber}`);
       
       // Importar Baileys si no está disponible
       if (!this.baileys) {
@@ -269,7 +270,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
                 this.pairingCode = code;
                 this.connectionMethod = 'pin';
                 
-                console.log(`📱 Código de vinculación generado: ${code}`);
+                logger.pairingCode(code, cleanNumber);
                 
                 this.emit('pairing_code_ready', {
                   pairingCode: code,
@@ -278,7 +279,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
                 
                 resolve(code);
               } catch (error) {
-                console.error('Error obteniendo código de vinculación:', error);
+                logger.error('Error obteniendo código de vinculación', error);
                 reject(error);
               }
             } else {
@@ -292,7 +293,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
       });
 
     } catch (error) {
-      console.error('Error solicitando código de vinculación:', error);
+      logger.error('Error solicitando código de vinculación', error);
       throw error;
     }
   }
@@ -342,6 +343,141 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
           response = `🪙 **Lanzando moneda** 🪙\n\nResultado: **${coin}** ${coin === 'Cara' ? '👤' : '❌'}`;
           break;
 
+        case 'clima':
+          const ciudad = args.join(' ') || 'Lima';
+          response = `🌤️ **Clima en ${ciudad}** 🌤️\n\n🌡️ Temperatura: 22°C\n☁️ Cielo: Parcialmente nublado\n💨 Viento: 15 km/h\n💧 Humedad: 68%\n\n*Para clima en tiempo real, usa una API de clima.*`;
+          break;
+
+        case 'meme':
+          const memes = [
+            '😂 ¿Por qué los peces no juegan fútbol? ¡Porque tienen miedo de la red!',
+            '🤔 ¿Qué le dijo el 3 al 30? Para ser como yo tienes que ser sincero.',
+            '😄 ¿Cómo se despiden los químicos? Ácido un placer.',
+            '🦈 ¿Por qué Gura es la mejor vtuber? ¡Porque es a-dorable!',
+            '🎮 Mi código funciona... no sé por qué. Mi código no funciona... tampoco sé por qué.',
+          ];
+          const randomMeme = memes[Math.floor(Math.random() * memes.length)];
+          response = `🎭 **Meme Aleatorio** 🎭\n\n${randomMeme}`;
+          break;
+
+        case 'traducir':
+          const textoTraducir = args.slice(1).join(' ');
+          const idioma = args[0] || 'en';
+          if (!textoTraducir) {
+            response = `🌐 **Traductor** 🌐\n\nUso: ${botConfig.defaultPrefix}traducir [idioma] [texto]\nEjemplo: ${botConfig.defaultPrefix}traducir en Hola mundo`;
+          } else {
+            response = `🌐 **Traduciendo a ${idioma}** 🌐\n\nTexto original: ${textoTraducir}\nTraducción: [Aquí iría la traducción con una API real]\n\n*Conecta una API de traducción para funcionalidad completa.*`;
+          }
+          break;
+
+        case 'calc':
+          const operacion = args.join(' ');
+          if (!operacion) {
+            response = `🧮 **Calculadora** 🧮\n\nUso: ${botConfig.defaultPrefix}calc [operación]\nEjemplo: ${botConfig.defaultPrefix}calc 2 + 2 * 3`;
+          } else {
+            try {
+              // Operación matemática simple y segura
+              const resultado = eval(operacion.replace(/[^0-9+\-*/().]/g, ''));
+              response = `🧮 **Calculadora** 🧮\n\nOperación: ${operacion}\nResultado: **${resultado}**`;
+            } catch (error) {
+              response = `🧮 **Calculadora** 🧮\n\n❌ Error: Operación inválida\nUsa solo números y operadores: +, -, *, /, ()`;
+            }
+          }
+          break;
+
+        case 'perfil':
+          response = `👤 **Tu Perfil** 👤\n\n📱 Número: ${from.replace('@s.whatsapp.net', '')}\n🆔 ID: ${from}\n⭐ Nivel: 1\n🎯 XP: 0\n🏆 Rango: Miembro\n📅 Registrado: Hoy`;
+          break;
+
+        case 'registro':
+          const nombreEdad = args.join(' ');
+          if (!nombreEdad || !nombreEdad.includes('.')) {
+            response = `📝 **Registro** 📝\n\nUso: ${botConfig.defaultPrefix}reg [nombre].[edad]\nEjemplo: ${botConfig.defaultPrefix}reg Gura.9000`;
+          } else {
+            const [nombre, edad] = nombreEdad.split('.');
+            response = `✅ **Registro Exitoso** ✅\n\n👤 Nombre: ${nombre}\n🎂 Edad: ${edad} años\n🎉 ¡Bienvenido al bot, ${nombre}!`;
+          }
+          break;
+
+        case 'top':
+          response = `🏆 **Ranking de Usuarios** 🏆\n\n1. 🥇 Usuario1 - 1500 XP\n2. 🥈 Usuario2 - 1200 XP\n3. 🥉 Usuario3 - 1000 XP\n4. 🏅 Usuario4 - 800 XP\n5. 🏅 Usuario5 - 600 XP\n\n*Conecta una base de datos para rankings reales.*`;
+          break;
+
+        case 'trivia':
+          const preguntas = [
+            { q: '¿Cuál es el océano más grande del mundo?', r: 'Pacífico' },
+            { q: '¿En qué año se fundó Hololive?', r: '2016' },
+            { q: '¿Cuántos corazones tiene un pulpo?', r: '3' },
+            { q: '¿Cuál es el planeta más grande del sistema solar?', r: 'Júpiter' },
+          ];
+          const pregunta = preguntas[Math.floor(Math.random() * preguntas.length)];
+          response = `🧠 **Trivia** 🧠\n\n❓ ${pregunta.q}\n\n*Responde en el chat. Respuesta: ||${pregunta.r}||*`;
+          break;
+
+        case 'adivinanza':
+          const adivinanzas = [
+            'Blanco por dentro, verde por fuera. Si quieres que te lo diga, espera. ¿Qué es?',
+            'Tiene dientes y no come, tiene cabeza y no es hombre. ¿Qué es?',
+            'Oro parece, plata no es, el que no lo adivine bien tonto es. ¿Qué es?',
+          ];
+          const adivinanza = adivinanzas[Math.floor(Math.random() * adivinanzas.length)];
+          response = `🤔 **Adivinanza** 🤔\n\n${adivinanza}\n\n*Responde en el chat para ver si aciertas.*`;
+          break;
+
+        case 'bola8':
+          const respuestasBola8 = [
+            'Es cierto', 'Es decididamente así', 'Sin lugar a dudas', 'Sí, definitivamente',
+            'Puedes confiar en ello', 'Como yo lo veo, sí', 'Muy probable', 'Las perspectivas son buenas',
+            'Sí', 'Las señales apuntan a que sí', 'Respuesta confusa, intenta de nuevo',
+            'Pregunta de nuevo más tarde', 'Mejor no decirte ahora', 'No puedo predecirlo ahora',
+            'Concéntrate y pregunta de nuevo', 'No cuentes con ello', 'Mi respuesta es no',
+            'Mis fuentes dicen que no', 'Las perspectivas no son tan buenas', 'Muy dudoso'
+          ];
+          const preguntaBola8 = args.join(' ');
+          if (!preguntaBola8) {
+            response = `🎱 **Bola Mágica 8** 🎱\n\nUso: ${botConfig.defaultPrefix}8ball [tu pregunta]\nEjemplo: ${botConfig.defaultPrefix}8ball ¿Seré rico?`;
+          } else {
+            const respuesta = respuestasBola8[Math.floor(Math.random() * respuestasBola8.length)];
+            response = `🎱 **Bola Mágica 8** 🎱\n\n❓ ${preguntaBola8}\n🔮 **${respuesta}**`;
+          }
+          break;
+
+        case 'cita':
+          const citas = [
+            '"La vida es lo que pasa mientras estás ocupado haciendo otros planes." - John Lennon',
+            '"El futuro pertenece a quienes creen en la belleza de sus sueños." - Eleanor Roosevelt',
+            '"No es el más fuerte de las especies el que sobrevive, sino el más adaptable." - Charles Darwin',
+            '"A-chan wa warukunai yo ne~" - Gawr Gura',
+            '"Shaaak!" - Gawr Gura',
+          ];
+          const cita = citas[Math.floor(Math.random() * citas.length)];
+          response = `💭 **Cita Inspiradora** 💭\n\n${cita}`;
+          break;
+
+        case 'gato':
+          response = `🐱 **Imagen de Gato** 🐱\n\n🖼️ Aquí tendría una linda imagen de gato\n*Conecta una API de imágenes para mostrar gatos reales.*\n\n😸 ¡Miau!`;
+          break;
+
+        case 'perro':
+          response = `🐶 **Imagen de Perro** 🐶\n\n🖼️ Aquí tendría una linda imagen de perro\n*Conecta una API de imágenes para mostrar perritos reales.*\n\n🐕 ¡Guau!`;
+          break;
+
+        case 'musica':
+          const cancion = args.join(' ');
+          if (!cancion) {
+            response = `🎵 **Búsqueda Musical** 🎵\n\nUso: ${botConfig.defaultPrefix}musica [nombre de canción]\nEjemplo: ${botConfig.defaultPrefix}musica Reflect`;
+          } else {
+            response = `🎵 **Búsqueda Musical** 🎵\n\n🎧 Buscando: "${cancion}"\n🎤 Artista: [Información del artista]\n⏱️ Duración: [Duración]\n\n*Conecta una API musical para información real.*`;
+          }
+          break;
+
+        case 'horario':
+          const ahora = new Date();
+          const hora = ahora.toLocaleTimeString('es-ES');
+          const fecha = ahora.toLocaleDateString('es-ES');
+          response = `🕐 **Hora Actual** 🕐\n\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n🌍 Zona: GMT-5 (Lima, Perú)`;
+          break;
+
         default:
           response = `🦈 Comando "${command}" encontrado pero no implementado aún.`;
       }
@@ -353,9 +489,11 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
     if (response) {
       try {
         await this.socket.sendMessage(from, { text: response });
-        console.log(`📤 Respuesta enviada a ${from}`);
+        logger.botMessage(from, response, 'outgoing');
+        logger.botCommand(command, from, true);
       } catch (error) {
-        console.error('Error enviando respuesta:', error);
+        logger.error('Error enviando respuesta', error);
+        logger.botCommand(command, from, false);
       }
     }
   }

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import LiveMessages from "@/components/live-messages";
 
 export default function Dashboard() {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -215,8 +216,8 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Estado del sistema */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Estado del sistema y mensajes en tiempo real */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Estado de conexión */}
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
@@ -295,6 +296,9 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Mensajes en tiempo real */}
+        <LiveMessages />
       </div>
 
       {/* Mensaje informativo */}
