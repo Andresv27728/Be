@@ -257,44 +257,52 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
         generateHighQualityLinkPreview: true,
       });
 
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const timeout = setTimeout(() => {
           tempSocket.end();
           reject(new Error('Timeout solicitando código de vinculación'));
         }, botConfig.pairingConfig.timeout);
 
-        tempSocket.ev.on('connection.update', async (update: any) => {
-          const { connection, lastDisconnect } = update;
+        // Solicitar código de vinculación directamente
+        try {
+          const code = await tempSocket.requestPairingCode(cleanNumber);
+          clearTimeout(timeout);
           
-          if (connection === 'close') {
-            clearTimeout(timeout);
-            tempSocket.end();
-            
-            const boom = lastDisconnect?.error as any;
-            if (boom?.output?.statusCode === 428) {
-              // Código 428 indica que necesitamos vinculación
-              try {
-                const code = await tempSocket.requestPairingCode(cleanNumber);
-                this.pairingCode = code;
-                this.connectionMethod = 'pin';
-                
-                logger.pairingCode(code, cleanNumber);
-                
-                this.emit('pairing_code_ready', {
-                  pairingCode: code,
-                  phoneNumber: cleanNumber
-                });
-                
-                resolve(code);
-              } catch (error) {
-                logger.error('Error obteniendo código de vinculación', error);
-                reject(error);
-              }
-            } else {
-              reject(new Error('No se pudo generar código de vinculación'));
+          this.pairingCode = code;
+          this.connectionMethod = 'pin';
+          
+          logger.pairingCode(code, cleanNumber);
+          
+          this.emit('pairing_code_ready', {
+            pairingCode: code,
+            phoneNumber: cleanNumber
+          });
+          
+          // Configurar este socket como el principal para la conexión
+          this.socket = tempSocket;
+          
+          // Configurar eventos para cuando se complete la vinculación
+          tempSocket.ev.on('connection.update', (update: any) => {
+            const { connection } = update;
+            if (connection === 'open') {
+              this.isConnected = true;
+              this.connectionMethod = 'pin';
+              this.qrCode = null;
+              logger.botConnection('connected', 'Conectado via PIN');
+              this.emit('connection_ready', { 
+                user: { name: 'Usuario', id: cleanNumber },
+                method: 'pin'
+              });
             }
-          }
-        });
+          });
+          
+          resolve(code);
+        } catch (error) {
+          clearTimeout(timeout);
+          tempSocket.end();
+          logger.error('Error obteniendo código de vinculación', error);
+          reject(error);
+        }
 
         // Iniciar el proceso de conexión
         tempSocket.ev.on('creds.update', saveCreds);

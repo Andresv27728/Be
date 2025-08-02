@@ -242,16 +242,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Request Pairing Code
+  app.post("/api/bot/pairing/request", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: "Número de teléfono requerido" });
+      }
+      
+      const pairingCode = await whatsappBot.requestPairingCode(phoneNumber);
+      
+      res.json({ 
+        success: true, 
+        pairingCode: pairingCode,
+        phoneNumber: phoneNumber 
+      });
+    } catch (error: any) {
+      console.error('Error solicitando código de vinculación:', error);
+      res.status(500).json({ 
+        error: error.message || "Error generando código de vinculación" 
+      });
+    }
+  });
+
   // Connect with PIN
   app.post("/api/bot/connect/pin", async (req, res) => {
     try {
       const { pin } = req.body;
       
-      // Simulate connection validation
-      const currentStatus = await storage.getBotStatus();
-      if (pin === currentStatus?.pinCode) {
+      if (!pin) {
+        return res.status(400).json({ error: "Código PIN requerido" });
+      }
+      
+      // En una implementación real, este PIN vendría del proceso de vinculación
+      // Por ahora validamos con el código que se generó
+      if (whatsappBot.pairingCode && pin === whatsappBot.pairingCode) {
+        // El bot ya debería estar conectado si el PIN fue ingresado correctamente en WhatsApp
         const status = await storage.updateBotStatus({
-          isConnected: true,
+          isConnected: whatsappBot.isConnected,
           connectionMethod: "pin"
         });
         
@@ -262,10 +291,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         res.json({ success: true, status });
       } else {
-        res.status(400).json({ error: "Invalid PIN code" });
+        res.status(400).json({ error: "Código PIN inválido" });
       }
     } catch (error) {
-      res.status(500).json({ error: "Failed to connect with PIN" });
+      res.status(500).json({ error: "Error conectando con PIN" });
     }
   });
 
@@ -429,6 +458,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       const stats = await storage.getStatistics(today);
+      
+      // Broadcast updated statistics via WebSocket
+      broadcast({
+        type: 'statistics_update',
+        data: stats
+      });
+      
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to get today's statistics" });

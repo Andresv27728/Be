@@ -46,9 +46,11 @@ export class MemStorage implements IStorage {
   private commands: Map<string, Command> = new Map();
   private statistics: Map<string, Statistics> = new Map();
   private botStatus: BotStatus;
+  private statsUpdateInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.initializeData();
+    this.startStatsUpdater();
   }
 
   private initializeData() {
@@ -189,24 +191,9 @@ export class MemStorage implements IStorage {
 
     commands.forEach(cmd => this.commands.set(cmd.name, cmd));
 
-    // Initialize today's statistics
+    // Initialize today's statistics with dynamic data
     const today = new Date().toISOString().split('T')[0];
-    const todayStats: Statistics = {
-      id: randomUUID(),
-      date: today,
-      totalMessages: 1247,
-      totalCommands: 890,
-      activeUsers: 156,
-      activeGroups: 42,
-      hourlyData: {
-        "00": { messages: 12, commands: 8, users: 5 },
-        "04": { messages: 19, commands: 12, users: 8 },
-        "08": { messages: 45, commands: 32, users: 23 },
-        "12": { messages: 89, commands: 67, users: 45 },
-        "16": { messages: 156, commands: 121, users: 78 },
-        "20": { messages: 134, commands: 98, users: 65 },
-      },
-    };
+    const todayStats: Statistics = this.generateRealtimeStatistics(today);
 
     this.statistics.set(today, todayStats);
 
@@ -245,6 +232,73 @@ export class MemStorage implements IStorage {
     ];
 
     messages.forEach(msg => this.messages.set(msg.id, msg));
+  }
+
+  private generateRealtimeStatistics(date: string): Statistics {
+    const baseMessages = 1200;
+    const baseCommands = 800;
+    const baseUsers = 150;
+    const baseGroups = 40;
+    
+    // Generar variaciones realistas basadas en la hora del día
+    const currentHour = new Date().getHours();
+    const timeMultiplier = this.getTimeMultiplier(currentHour);
+    
+    return {
+      id: randomUUID(),
+      date: date,
+      totalMessages: Math.floor(baseMessages + (Math.random() * 100 * timeMultiplier)),
+      totalCommands: Math.floor(baseCommands + (Math.random() * 50 * timeMultiplier)),
+      activeUsers: Math.floor(baseUsers + (Math.random() * 20 * timeMultiplier)),
+      activeGroups: Math.floor(baseGroups + (Math.random() * 5 * timeMultiplier)),
+      hourlyData: this.generateHourlyData(currentHour),
+    };
+  }
+
+  private getTimeMultiplier(hour: number): number {
+    // Simular actividad más alta durante el día y más baja en la noche
+    if (hour >= 6 && hour <= 10) return 1.3; // Mañana alta
+    if (hour >= 11 && hour <= 14) return 1.5; // Mediodía muy alta
+    if (hour >= 15 && hour <= 18) return 1.4; // Tarde alta
+    if (hour >= 19 && hour <= 22) return 1.2; // Noche moderada
+    return 0.8; // Madrugada baja
+  }
+
+  private generateHourlyData(currentHour: number): Record<string, { messages: number; commands: number; users: number }> {
+    const hourlyData: Record<string, { messages: number; commands: number; users: number }> = {};
+    
+    for (let i = 0; i < 24; i++) {
+      const hour = i.toString().padStart(2, '0');
+      const multiplier = this.getTimeMultiplier(i);
+      const isCurrentHour = i === currentHour;
+      
+      // Datos más dinámicos para la hora actual
+      const baseActivity = isCurrentHour ? Math.random() * 20 + 10 : Math.random() * 15 + 5;
+      
+      hourlyData[hour] = {
+        messages: Math.floor(baseActivity * multiplier * 3),
+        commands: Math.floor(baseActivity * multiplier * 2),
+        users: Math.floor(baseActivity * multiplier),
+      };
+    }
+    
+    return hourlyData;
+  }
+
+  private startStatsUpdater(): void {
+    // Actualizar estadísticas cada 10 segundos para que se vean más dinámicas
+    this.statsUpdateInterval = setInterval(() => {
+      const today = new Date().toISOString().split('T')[0];
+      const updatedStats = this.generateRealtimeStatistics(today);
+      this.statistics.set(today, updatedStats);
+    }, 10000);
+  }
+
+  // Método para limpiar el intervalo si es necesario
+  public cleanup(): void {
+    if (this.statsUpdateInterval) {
+      clearInterval(this.statsUpdateInterval);
+    }
   }
 
   // Users

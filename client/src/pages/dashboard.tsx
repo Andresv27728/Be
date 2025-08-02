@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   const { data: statistics, isLoading: statsLoading } = useQuery<Statistics>({
     queryKey: ["/api/statistics/today"],
-    refetchInterval: 30000,
+    refetchInterval: 5000, // Actualizar cada 5 segundos
   });
 
   const { data: botStatus } = useQuery<BotStatus>({
