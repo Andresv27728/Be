@@ -1,0 +1,936 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦈 Gawr Gura Bot - WhatsApp Bot Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ocean': '#0077BE',
+                        'aqua': '#00CED1',
+                        'deep-sea': '#1E3A8A',
+                        'coral': '#FF6B6B',
+                        'pearl': '#F8FAFC',
+                        'wave': '#4A90E2'
+                    },
+                    fontFamily: {
+                        'shark': ['Comfortaa', 'cursive']
+                    },
+                    animation: {
+                        'wave': 'wave 2s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-blue': 'pulse-blue 2s ease-in-out infinite'
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes wave {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-5px) rotate(1deg); }
+            66% { transform: translateY(-3px) rotate(-1deg); }
+        }
+        @keyframes pulse-blue {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(77, 144, 226, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(77, 144, 226, 0); }
+        }
+        .wave-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234A90E2' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-11.046-8.954-20-20-20v20h20z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .chat-bubble {
+            border-radius: 18px 18px 4px 18px;
+        }
+        .chat-bubble-sent {
+            border-radius: 18px 18px 18px 4px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-ocean via-wave to-deep-sea min-h-screen font-inter">
+    <!-- @COMPONENT: AppContainer -->
+    <div class="min-h-screen relative overflow-hidden">
+        <!-- Background decorative elements -->
+        <div class="absolute inset-0 wave-pattern opacity-20"></div>
+        <div class="absolute top-10 right-10 text-6xl opacity-20 animate-float">🦈</div>
+        <div class="absolute bottom-20 left-10 text-4xl opacity-30 animate-wave">🌊</div>
+        <div class="absolute top-1/3 left-1/4 text-3xl opacity-25 animate-float">🐠</div>
+
+        <!-- @COMPONENT: Navigation -->
+        <nav class="relative z-50 bg-white/10 backdrop-blur-lg border-b border-white/20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-aqua to-ocean rounded-full flex items-center justify-center animate-pulse-blue">
+                            <i class="fas fa-robot text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-white font-shark font-bold text-xl">🦈 Gawr Gura Bot</h1>
+                            <p class="text-aqua text-xs">Advanced WhatsApp Bot v2.0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden md:flex space-x-6">
+                        <button data-tab="dashboard" class="nav-btn text-white hover:text-aqua transition-colors px-3 py-2 rounded-lg font-medium">
+                            <i class="fas fa-chart-line mr-2"></i>Dashboard
+                        </button>
+                        <button data-tab="chat" class="nav-btn text-white hover:text-aqua transition-colors px-3 py-2 rounded-lg font-medium">
+                            <i class="fas fa-comments mr-2"></i>Chat
+                        </button>
+                        <button data-tab="admin" class="nav-btn text-white hover:text-aqua transition-colors px-3 py-2 rounded-lg font-medium">
+                            <i class="fas fa-cog mr-2"></i>Admin
+                        </button>
+                        <button data-tab="connect" class="nav-btn bg-coral hover:bg-coral/80 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-qrcode mr-2"></i>Conectar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- @COMPONENT: MainContent -->
+        <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- @COMPONENT: ConnectionTab -->
+            <div id="connect-tab" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
+                        <div class="text-center mb-8">
+                            <div class="w-20 h-20 bg-gradient-to-br from-aqua to-ocean rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-blue">
+                                <i class="fas fa-link text-white text-2xl"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">🦈 Conectar Gawr Gura Bot</h2>
+                            <p class="text-gray-600">Elige tu método de conexión preferido</p>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <!-- QR Code Connection -->
+                            <div class="bg-gradient-to-br from-ocean/10 to-aqua/10 rounded-xl p-6 border border-aqua/20">
+                                <div class="text-center">
+                                    <i class="fas fa-qrcode text-4xl text-ocean mb-4"></i>
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Código QR</h3>
+                                    
+                                    <!-- Mock QR Code -->
+                                    <div class="w-48 h-48 bg-white border-4 border-ocean rounded-lg mx-auto mb-4 flex items-center justify-center">
+                                        <div class="w-40 h-40 bg-gray-900 rounded-lg relative">
+                                            <div class="absolute inset-2 bg-white rounded-sm"></div>
+                                            <div class="absolute inset-4 bg-gray-900 rounded-sm"></div>
+                                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs">QR</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-sm text-gray-600 mb-4">Escanea este código desde WhatsApp Web</p>
+                                    <button class="bg-ocean hover:bg-ocean/80 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                                        <i class="fas fa-sync-alt mr-2"></i>Generar Nuevo QR
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- PIN Code Connection -->
+                            <div class="bg-gradient-to-br from-coral/10 to-orange-400/10 rounded-xl p-6 border border-coral/20">
+                                <div class="text-center">
+                                    <i class="fas fa-key text-4xl text-coral mb-4"></i>
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Código de 8 Dígitos</h3>
+                                    
+                                    <div class="space-y-4">
+                                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                            <input type="text" placeholder="Ingresa el código de 8 dígitos" 
+                                                   class="w-full text-center text-2xl font-mono tracking-widest border-none outline-none" 
+                                                   maxlength="8" data-mock="true">
+                                        </div>
+                                        
+                                        <div class="text-lg font-mono text-coral bg-coral/10 rounded-lg p-3 mb-4">
+                                            A1B2-C3D4
+                                        </div>
+                                        
+                                        <p class="text-sm text-gray-600 mb-4">Ingresa este código en WhatsApp</p>
+                                        <button class="bg-coral hover:bg-coral/80 text-white px-6 py-2 rounded-lg font-medium transition-colors w-full">
+                                            <i class="fas fa-plug mr-2"></i>Conectar Bot
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Connection Status -->
+                        <div class="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse mr-3"></div>
+                                <p class="text-green-800 font-medium">🦈 Estado: Desconectado - Esperando conexión...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: DashboardTab -->
+            <div id="dashboard-tab" class="tab-content">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Grupos Activos</p>
+                                <p class="text-3xl font-bold text-ocean" data-bind="stats.activeGroups">42</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-ocean to-aqua rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-white"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-green-600">
+                            <i class="fas fa-arrow-up text-xs mr-1"></i>
+                            <span class="text-sm">+12% desde ayer</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Mensajes Hoy</p>
+                                <p class="text-3xl font-bold text-aqua" data-bind="stats.todayMessages">1,247</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-aqua to-cyan-400 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-comment text-white"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-green-600">
+                            <i class="fas fa-arrow-up text-xs mr-1"></i>
+                            <span class="text-sm">+8% desde ayer</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Comandos Ejecutados</p>
+                                <p class="text-3xl font-bold text-coral" data-bind="stats.commandsExecuted">890</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-coral to-red-400 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-terminal text-white"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-green-600">
+                            <i class="fas fa-arrow-up text-xs mr-1"></i>
+                            <span class="text-sm">+15% desde ayer</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Usuarios Únicos</p>
+                                <p class="text-3xl font-bold text-deep-sea" data-bind="stats.uniqueUsers">156</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-deep-sea to-indigo-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-friends text-white"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-green-600">
+                            <i class="fas fa-arrow-up text-xs mr-1"></i>
+                            <span class="text-sm">+5% desde ayer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Messages Chart -->
+                    <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">📊 Mensajes por Hora</h3>
+                            <i class="fas fa-chart-area text-ocean"></i>
+                        </div>
+                        <canvas id="messagesChart" class="w-full h-64"></canvas>
+                    </div>
+
+                    <!-- Commands Chart -->
+                    <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-800">⚡ Comandos Populares</h3>
+                            <i class="fas fa-chart-pie text-aqua"></i>
+                        </div>
+                        <canvas id="commandsChart" class="w-full h-64"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">🌊 Actividad Reciente</h3>
+                        <button class="text-ocean hover:text-ocean/80 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- @MAP: recentActivity.map(activity => ( -->
+                        <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors" data-mock="true">
+                            <div class="w-10 h-10 bg-gradient-to-br from-ocean to-aqua rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">Usuario123 ejecutó comando /sticker</p>
+                                <p class="text-sm text-gray-600">Grupo: 🦈 Gura Fans - hace 2 minutos</p>
+                            </div>
+                            <div class="text-green-500">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors" data-mock="true">
+                            <div class="w-10 h-10 bg-gradient-to-br from-coral to-red-400 rounded-full flex items-center justify-center">
+                                <i class="fas fa-gamepad text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">MarineFan inició juego de trivia</p>
+                                <p class="text-sm text-gray-600">Grupo: 🌊 Ocean Chat - hace 5 minutos</p>
+                            </div>
+                            <div class="text-blue-500">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg transition-colors" data-mock="true">
+                            <div class="w-10 h-10 bg-gradient-to-br from-deep-sea to-indigo-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-volume-up text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">SharkLover reprodujo audio marino</p>
+                                <p class="text-sm text-gray-600">Grupo: 🐠 Aquatic Life - hace 8 minutos</p>
+                            </div>
+                            <div class="text-purple-500">
+                                <i class="fas fa-music"></i>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: ChatTab -->
+            <div id="chat-tab" class="tab-content hidden">
+                <div class="bg-white/95 backdrop-blur-lg rounded-xl shadow-2xl border border-white/20 overflow-hidden h-[800px] flex">
+                    <!-- Sidebar -->
+                    <div class="w-80 bg-gray-50 border-r border-gray-200 flex flex-col">
+                        <!-- Header -->
+                        <div class="p-4 bg-gradient-to-r from-ocean to-aqua text-white">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold">🦈 Gawr Gura Bot</h3>
+                                    <p class="text-xs opacity-90">42 grupos activos</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="p-4">
+                            <div class="relative">
+                                <input type="text" placeholder="Buscar conversaciones..." 
+                                       class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" data-mock="true">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Groups List -->
+                        <div class="flex-1 overflow-y-auto">
+                            <!-- @MAP: groups.map(group => ( -->
+                            <div class="group-item p-4 border-b border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors" data-group="gura-fans">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-ocean to-aqua rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">🦈</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800">Gura Fans</h4>
+                                        <p class="text-sm text-gray-600">Usuario123: a!</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">14:30</p>
+                                        <div class="w-5 h-5 bg-coral rounded-full text-white text-xs flex items-center justify-center mt-1">3</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="group-item p-4 border-b border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors" data-group="ocean-chat">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-aqua to-cyan-400 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">🌊</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800">Ocean Chat</h4>
+                                        <p class="text-sm text-gray-600">MarineFan: /trivia</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">14:25</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="group-item p-4 border-b border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors" data-group="aquatic-life">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-deep-sea to-indigo-600 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">🐠</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-800">Aquatic Life</h4>
+                                        <p class="text-sm text-gray-600">SharkLover: Que lindo!</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">14:22</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Chat Area -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- Chat Header -->
+                        <div class="p-4 bg-gradient-to-r from-ocean to-aqua text-white border-b">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                        <span class="font-bold">🦈</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold">Gura Fans</h3>
+                                        <p class="text-xs opacity-90">156 miembros • 12 en línea</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    <button class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages Area -->
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
+                            <!-- @MAP: messages.map(message => ( -->
+                            <!-- Received Message -->
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-gradient-to-br from-ocean to-aqua rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold">U</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-white chat-bubble shadow-sm p-3 max-w-md">
+                                        <p class="text-sm font-medium text-ocean mb-1">Usuario123</p>
+                                        <p class="text-gray-800">a!</p>
+                                        <p class="text-xs text-gray-500 mt-1">14:30</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bot Response -->
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-gradient-to-br from-coral to-red-400 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-robot text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-gradient-to-br from-coral/10 to-orange-100 chat-bubble p-3 max-w-md border border-coral/20">
+                                        <p class="text-sm font-medium text-coral mb-1">🦈 Gawr Gura Bot</p>
+                                        <p class="text-gray-800">¡¡¡AAAAAA!!! 🦈✨ ¡Hola chummmmm! *chomp chomp* ¿Necesitas ayuda? Usa /help para ver todos mis comandos súper geniales del fondo del mar! 🌊</p>
+                                        <p class="text-xs text-gray-500 mt-1">14:30</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Command -->
+                            <div class="flex justify-end" data-mock="true">
+                                <div class="bg-gradient-to-br from-ocean to-aqua chat-bubble-sent text-white p-3 max-w-md">
+                                    <p class="text-sm font-medium mb-1">MarineFan</p>
+                                    <p>/sticker shark</p>
+                                    <p class="text-xs opacity-90 mt-1">14:31</p>
+                                </div>
+                            </div>
+
+                            <!-- Bot Sticker Response -->
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-gradient-to-br from-coral to-red-400 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-robot text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-gradient-to-br from-coral/10 to-orange-100 chat-bubble p-3 max-w-md border border-coral/20">
+                                        <p class="text-sm font-medium text-coral mb-2">🦈 Gawr Gura Bot</p>
+                                        <div class="w-32 h-32 bg-gradient-to-br from-aqua to-ocean rounded-lg flex items-center justify-center text-4xl">
+                                            🦈
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">Sticker enviado • 14:31</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Game Command -->
+                            <div class="flex justify-end" data-mock="true">
+                                <div class="bg-gradient-to-br from-deep-sea to-indigo-600 chat-bubble-sent text-white p-3 max-w-md">
+                                    <p class="text-sm font-medium mb-1">SharkLover</p>
+                                    <p>/trivia ocean</p>
+                                    <p class="text-xs opacity-90 mt-1">14:32</p>
+                                </div>
+                            </div>
+
+                            <!-- Bot Game Response -->
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-gradient-to-br from-coral to-red-400 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-robot text-white text-xs"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-gradient-to-br from-coral/10 to-orange-100 chat-bubble p-4 max-w-md border border-coral/20">
+                                        <p class="text-sm font-medium text-coral mb-2">🦈 Gawr Gura Bot</p>
+                                        <div class="bg-white rounded-lg p-3 border border-aqua/30">
+                                            <h4 class="font-semibold text-ocean mb-2">🌊 Trivia del Océano</h4>
+                                            <p class="text-gray-800 mb-3">¿Cuál es el animal marino más grande del mundo?</p>
+                                            <div class="space-y-2">
+                                                <button class="w-full text-left p-2 bg-gray-100 hover:bg-aqua/10 rounded transition-colors">A) Tiburón ballena</button>
+                                                <button class="w-full text-left p-2 bg-gray-100 hover:bg-aqua/10 rounded transition-colors">B) Ballena azul</button>
+                                                <button class="w-full text-left p-2 bg-gray-100 hover:bg-aqua/10 rounded transition-colors">C) Calamar gigante</button>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">Tienes 30 segundos • 14:32</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="p-4 bg-white border-t border-gray-200">
+                            <div class="flex items-center space-x-3">
+                                <button class="p-2 text-gray-500 hover:text-ocean transition-colors">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <div class="flex-1 relative">
+                                    <input type="text" placeholder="Escribe un mensaje..." 
+                                           class="w-full px-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-ocean" data-mock="true">
+                                    <button class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-ocean transition-colors">
+                                        <i class="fas fa-smile"></i>
+                                    </button>
+                                </div>
+                                <button class="p-2 text-gray-500 hover:text-ocean transition-colors">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button class="p-2 bg-ocean text-white rounded-full hover:bg-ocean/80 transition-colors">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: AdminTab -->
+            <div id="admin-tab" class="tab-content hidden">
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Bot Configuration -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Commands Configuration -->
+                        <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">⚡ Configuración de Comandos</h3>
+                                <button class="bg-ocean text-white px-4 py-2 rounded-lg hover:bg-ocean/80 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Nuevo Comando
+                                </button>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- @MAP: commands.map(command => ( -->
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="bg-ocean text-white px-3 py-1 rounded-full text-sm font-mono">/help</span>
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Activo</span>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button class="text-ocean hover:text-ocean/80 transition-colors">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-coral hover:text-coral/80 transition-colors">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">Muestra la lista de comandos disponibles</p>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                        <span><i class="fas fa-users mr-1"></i>Usado: 342 veces</span>
+                                        <span><i class="fas fa-clock mr-1"></i>Última vez: hace 2 min</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="bg-aqua text-white px-3 py-1 rounded-full text-sm font-mono">/sticker</span>
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Activo</span>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button class="text-ocean hover:text-ocean/80 transition-colors">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-coral hover:text-coral/80 transition-colors">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">Genera y envía stickers personalizados</p>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                        <span><i class="fas fa-users mr-1"></i>Usado: 189 veces</span>
+                                        <span><i class="fas fa-clock mr-1"></i>Última vez: hace 5 min</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="bg-coral text-white px-3 py-1 rounded-full text-sm font-mono">/trivia</span>
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Activo</span>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button class="text-ocean hover:text-ocean/80 transition-colors">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-coral hover:text-coral/80 transition-colors">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">Inicia juegos de trivia interactivos</p>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                        <span><i class="fas fa-users mr-1"></i>Usado: 156 veces</span>
+                                        <span><i class="fas fa-clock mr-1"></i>Última vez: hace 8 min</span>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <!-- Group Management -->
+                        <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">👥 Gestión de Grupos</h3>
+                                <button class="bg-aqua text-white px-4 py-2 rounded-lg hover:bg-aqua/80 transition-colors">
+                                    <i class="fas fa-sync-alt mr-2"></i>Sincronizar
+                                </button>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- @MAP: groups.map(group => ( -->
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200" data-mock="true">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-ocean to-aqua rounded-full flex items-center justify-center">
+                                            <span class="text-white font-bold">🦈</span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">Gura Fans</h4>
+                                            <p class="text-sm text-gray-600">156 miembros • 12 activos</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Bot Activo</span>
+                                        <button class="text-ocean hover:text-ocean/80 transition-colors">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200" data-mock="true">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-aqua to-cyan-400 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-bold">🌊</span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">Ocean Chat</h4>
+                                            <p class="text-sm text-gray-600">89 miembros • 8 activos</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Bot Activo</span>
+                                        <button class="text-ocean hover:text-ocean/80 transition-colors">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200" data-mock="true">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-deep-sea to-indigo-600 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-bold">🐠</span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">Aquatic Life</h4>
+                                            <p class="text-sm text-gray-600">67 miembros • 5 activos</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Limitado</span>
+                                        <button class="text-ocean hover:text-ocean/80 transition-colors">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="space-y-6">
+                        <!-- Bot Status -->
+                        <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">🤖 Estado del Bot</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Estado</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                                        <span class="text-green-700 font-medium">En línea</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Uptime</span>
+                                    <span class="text-gray-800 font-medium" data-bind="system.uptime">2d 14h 32m</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Memoria</span>
+                                    <span class="text-gray-800 font-medium" data-bind="system.memory">247MB / 512MB</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">CPU</span>
+                                    <span class="text-gray-800 font-medium" data-bind="system.cpu">23%</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Versión</span>
+                                    <span class="text-gray-800 font-medium">v2.0.1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">⚡ Acciones Rápidas</h3>
+                            
+                            <div class="space-y-3">
+                                <button class="w-full bg-ocean text-white p-3 rounded-lg hover:bg-ocean/80 transition-colors text-left">
+                                    <i class="fas fa-sync-alt mr-2"></i>Reiniciar Bot
+                                </button>
+                                
+                                <button class="w-full bg-coral text-white p-3 rounded-lg hover:bg-coral/80 transition-colors text-left">
+                                    <i class="fas fa-broom mr-2"></i>Limpiar Cache
+                                </button>
+                                
+                                <button class="w-full bg-aqua text-white p-3 rounded-lg hover:bg-aqua/80 transition-colors text-left">
+                                    <i class="fas fa-download mr-2"></i>Exportar Logs
+                                </button>
+                                
+                                <button class="w-full bg-deep-sea text-white p-3 rounded-lg hover:bg-deep-sea/80 transition-colors text-left">
+                                    <i class="fas fa-database mr-2"></i>Backup BD
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Logs -->
+                        <div class="bg-white/95 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-white/20">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Logs Recientes</h3>
+                            
+                            <div class="space-y-2 text-sm">
+                                <!-- @MAP: logs.map(log => ( -->
+                                <div class="flex items-start space-x-2 text-green-700" data-mock="true">
+                                    <i class="fas fa-check-circle text-xs mt-1"></i>
+                                    <div>
+                                        <p>Bot conectado exitosamente</p>
+                                        <span class="text-gray-500">14:30:15</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-2 text-blue-700" data-mock="true">
+                                    <i class="fas fa-info-circle text-xs mt-1"></i>
+                                    <div>
+                                        <p>Comando /sticker ejecutado</p>
+                                        <span class="text-gray-500">14:29:42</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-2 text-orange-700" data-mock="true">
+                                    <i class="fas fa-exclamation-triangle text-xs mt-1"></i>
+                                    <div>
+                                        <p>Rate limit aplicado</p>
+                                        <span class="text-gray-500">14:28:33</span>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="relative z-10 bg-white/10 backdrop-blur-lg border-t border-white/20 py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between">
+                    <p class="text-white/80">🦈 Gawr Gura Bot v2.0.1 - Desarrollado con ❤️ para la comunidad</p>
+                    <div class="flex items-center space-x-4 text-white/60">
+                        <span>Powered by Render</span>
+                        <i class="fas fa-server"></i>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        // Tab switching functionality
+        (function() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Show dashboard by default
+            document.getElementById('dashboard-tab').classList.remove('hidden');
+            
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabName = button.getAttribute('data-tab');
+                    
+                    // Hide all tabs
+                    tabContents.forEach(tab => tab.classList.add('hidden'));
+                    
+                    // Show selected tab
+                    const selectedTab = document.getElementById(`${tabName}-tab`);
+                    if (selectedTab) {
+                        selectedTab.classList.remove('hidden');
+                    }
+                    
+                    // Update button states
+                    navButtons.forEach(btn => btn.classList.remove('bg-white/20'));
+                    button.classList.add('bg-white/20');
+                });
+            });
+            
+            // Group switching in chat
+            const groupItems = document.querySelectorAll('.group-item');
+            groupItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    groupItems.forEach(group => group.classList.remove('bg-gray-100'));
+                    item.classList.add('bg-gray-100');
+                    // TODO: Load group messages
+                });
+            });
+        })();
+
+        // Initialize Charts
+        (function() {
+            // Messages Chart
+            const messagesCtx = document.getElementById('messagesChart');
+            if (messagesCtx) {
+                new Chart(messagesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                        datasets: [{
+                            label: 'Mensajes',
+                            data: [12, 19, 45, 89, 156, 134],
+                            borderColor: '#0077BE',
+                            backgroundColor: 'rgba(0, 119, 190, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Commands Chart
+            const commandsCtx = document.getElementById('commandsChart');
+            if (commandsCtx) {
+                new Chart(commandsCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['/help', '/sticker', '/trivia', '/admin', 'Otros'],
+                        datasets: [{
+                            data: [342, 189, 156, 78, 94],
+                            backgroundColor: [
+                                '#0077BE',
+                                '#00CED1',
+                                '#FF6B6B',
+                                '#1E3A8A',
+                                '#4A90E2'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+
+        // Simulate real-time updates
+        (function() {
+            setInterval(() => {
+                // TODO: Implement WebSocket connection for real-time updates
+                // Update statistics, activity feed, etc.
+                console.log('Simulating real-time update...');
+            }, 5000);
+        })();
+
+        // Connection status simulation
+        (function() {
+            const connectionMethods = document.querySelectorAll('[data-connection]');
+            
+            // TODO: Implement actual WhatsApp connection logic
+            // This would integrate with baileys or similar library
+            
+            // Simulate QR code refresh
+            const qrRefreshBtn = document.querySelector('[data-qr-refresh]');
+            if (qrRefreshBtn) {
+                qrRefreshBtn.addEventListener('click', () => {
+                    // TODO: Generate new QR code
+                    console.log('Generating new QR code...');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
