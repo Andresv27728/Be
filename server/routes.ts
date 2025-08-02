@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import whatsappBot from "./whatsapp-working";
-import { insertMessageSchema, insertUserSchema, insertGroupSchema, insertCommandSchema } from "@shared/schema";
+import { insertMessageSchema, insertUserSchema, insertGroupSchema, insertCommandSchema } from "../shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
