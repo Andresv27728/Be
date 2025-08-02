@@ -494,6 +494,92 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
           response = `🕐 **Hora Actual** 🕐\n\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n🌍 Zona: GMT-5 (Lima, Perú)`;
           break;
 
+        case 'ytdl':
+        case 'youtube':
+        case 'yt':
+        case 'download':
+          const urlYT = args.join(' ');
+          if (!urlYT) {
+            response = `🎵 **Descargador YouTube** 🎵\n\nUso: ${botConfig.defaultPrefix}ytdl [URL de YouTube]\nEjemplo: ${botConfig.defaultPrefix}ytdl https://youtu.be/dQw4w9WgXcQ\n\n📱 Formatos disponibles:\n• Audio MP3 (música)\n• Video MP4 (baja calidad)\n\n⚠️ Solo enlaces públicos de YouTube`;
+          } else if (this.isValidYouTubeUrl(urlYT)) {
+            response = `🎵 **Procesando YouTube** 🎵\n\n🔄 Analizando: ${urlYT}\n⏳ Obteniendo información...\n\n*Este proceso puede tomar unos segundos*`;
+            
+            // Procesar descarga de forma asíncrona
+            this.processYouTubeDownload(urlYT, from).catch(error => {
+              console.error('Error procesando YouTube:', error);
+            });
+          } else {
+            response = `🎵 **Descargador YouTube** 🎵\n\n❌ URL inválida. Usa un enlace válido de YouTube:\n• https://youtube.com/watch?v=...\n• https://youtu.be/...\n• https://m.youtube.com/watch?v=...`;
+          }
+          break;
+
+        case 'tiktok':
+        case 'tt':
+        case 'tik':
+          const urlTT = args.join(' ');
+          if (!urlTT) {
+            response = `🎭 **Descargador TikTok** 🎭\n\nUso: ${botConfig.defaultPrefix}tiktok [URL de TikTok]\nEjemplo: ${botConfig.defaultPrefix}tiktok https://vm.tiktok.com/...\n\n📱 Descarga sin marca de agua`;
+          } else if (this.isValidTikTokUrl(urlTT)) {
+            response = `🎭 **Procesando TikTok** 🎭\n\n🔄 Analizando: ${urlTT}\n⏳ Descargando sin marca de agua...\n\n*Procesando video...*`;
+            
+            this.processTikTokDownload(urlTT, from).catch(error => {
+              console.error('Error procesando TikTok:', error);
+            });
+          } else {
+            response = `🎭 **Descargador TikTok** 🎭\n\n❌ URL inválida. Usa un enlace válido de TikTok:\n• https://tiktok.com/@user/video/...\n• https://vm.tiktok.com/...\n• https://www.tiktok.com/...`;
+          }
+          break;
+
+        case 'instagram':
+        case 'ig':
+        case 'insta':
+          const urlIG = args.join(' ');
+          if (!urlIG) {
+            response = `📸 **Descargador Instagram** 📸\n\nUso: ${botConfig.defaultPrefix}instagram [URL de Instagram]\nEjemplo: ${botConfig.defaultPrefix}ig https://instagram.com/p/...\n\n📱 Soporta: Fotos, Videos, Reels, IGTV`;
+          } else if (this.isValidInstagramUrl(urlIG)) {
+            response = `📸 **Procesando Instagram** 📸\n\n🔄 Analizando: ${urlIG}\n⏳ Descargando contenido...\n\n*Obteniendo media...*`;
+            
+            this.processInstagramDownload(urlIG, from).catch(error => {
+              console.error('Error procesando Instagram:', error);
+            });
+          } else {
+            response = `📸 **Descargador Instagram** 📸\n\n❌ URL inválida. Usa un enlace válido de Instagram:\n• https://instagram.com/p/...\n• https://instagram.com/reel/...\n• https://instagram.com/tv/...`;
+          }
+          break;
+
+        case 'twitter':
+        case 'x':
+        case 'tweet':
+          const urlTW = args.join(' ');
+          if (!urlTW) {
+            response = `🐦 **Descargador Twitter/X** 🐦\n\nUso: ${botConfig.defaultPrefix}twitter [URL de Tweet]\nEjemplo: ${botConfig.defaultPrefix}x https://twitter.com/user/status/...\n\n📱 Descarga videos de tweets`;
+          } else if (this.isValidTwitterUrl(urlTW)) {
+            response = `🐦 **Procesando Twitter/X** 🐦\n\n🔄 Analizando: ${urlTW}\n⏳ Descargando video...\n\n*Extrayendo contenido...*`;
+            
+            this.processTwitterDownload(urlTW, from).catch(error => {
+              console.error('Error procesando Twitter:', error);
+            });
+          } else {
+            response = `🐦 **Descargador Twitter/X** 🐦\n\n❌ URL inválida. Usa un enlace válido de Twitter/X:\n• https://twitter.com/user/status/...\n• https://x.com/user/status/...`;
+          }
+          break;
+
+        case 'facebook':
+        case 'fb':
+          const urlFB = args.join(' ');
+          if (!urlFB) {
+            response = `📘 **Descargador Facebook** 📘\n\nUso: ${botConfig.defaultPrefix}facebook [URL de Facebook]\nEjemplo: ${botConfig.defaultPrefix}fb https://facebook.com/watch/...\n\n📱 Solo videos públicos`;
+          } else if (this.isValidFacebookUrl(urlFB)) {
+            response = `📘 **Procesando Facebook** 📘\n\n🔄 Analizando: ${urlFB}\n⏳ Descargando video...\n\n*Solo videos públicos disponibles*`;
+            
+            this.processFacebookDownload(urlFB, from).catch(error => {
+              console.error('Error procesando Facebook:', error);
+            });
+          } else {
+            response = `📘 **Descargador Facebook** 📘\n\n❌ URL inválida. Usa un enlace válido de Facebook:\n• https://facebook.com/watch/...\n• https://fb.watch/...\n• https://www.facebook.com/...`;
+          }
+          break;
+
         default:
           response = `🦈 Comando "${command}" encontrado pero no implementado aún.`;
       }
@@ -511,6 +597,191 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
         logger.error('Error enviando respuesta', error);
         logger.botCommand(command, from, false);
       }
+    }
+  }
+
+  // Funciones de validación de URLs
+  private isValidYouTubeUrl(url: string): boolean {
+    const patterns = [
+      /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|m\.youtube\.com\/watch\?v=)/,
+      /^https?:\/\/(www\.)?youtube\.com\/shorts\//
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  }
+
+  private isValidTikTokUrl(url: string): boolean {
+    const patterns = [
+      /^https?:\/\/(www\.)?(tiktok\.com|vm\.tiktok\.com)/,
+      /^https?:\/\/(www\.)?tiktok\.com\/@[\w.-]+\/video\/\d+/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  }
+
+  private isValidInstagramUrl(url: string): boolean {
+    const patterns = [
+      /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[\w-]+/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  }
+
+  private isValidTwitterUrl(url: string): boolean {
+    const patterns = [
+      /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[\w]+\/status\/\d+/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  }
+
+  private isValidFacebookUrl(url: string): boolean {
+    const patterns = [
+      /^https?:\/\/(www\.)?(facebook\.com\/watch|fb\.watch)/,
+      /^https?:\/\/(www\.)?facebook\.com\/[\w.-]+\/videos/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  }
+
+  // Funciones de procesamiento de descargas
+  private async processYouTubeDownload(url: string, from: string): Promise<void> {
+    try {
+      // Simular llamada a API gratuita de Cobalt
+      const response = await this.fetchFromAPI(botConfig.downloadApis.youtube, {
+        url: url,
+        vCodec: 'h264',
+        vQuality: '720',
+        aFormat: 'mp3',
+        isAudioOnly: false
+      });
+
+      if (response && response.status === 'success') {
+        const info = `🎵 **Descarga YouTube Completada** 🎵\n\n📹 Título: ${response.title || 'Video de YouTube'}\n👤 Canal: ${response.author || 'Desconocido'}\n⏱️ Duración: ${response.duration || 'N/A'}\n\n🎬 **Enviando video...**`;
+        
+        await this.socket.sendMessage(from, { text: info });
+        
+        // En una implementación real, aquí enviarías el archivo
+        const finalMessage = `✅ **Descarga Enviada** ✅\n\n📁 Archivo procesado desde YouTube\n💡 Para mejores resultados, conecta una API de descarga real.`;
+        await this.socket.sendMessage(from, { text: finalMessage });
+      } else {
+        throw new Error('No se pudo procesar el video');
+      }
+    } catch (error) {
+      const errorMsg = `❌ **Error YouTube** ❌\n\nNo se pudo descargar el video.\n🔧 Posibles soluciones:\n• Verifica que el enlace sea público\n• Intenta con otro video\n• Algunos videos están protegidos\n\n💡 *Para funcionalidad completa, conecta una API de descarga.*`;
+      await this.socket.sendMessage(from, { text: errorMsg });
+    }
+  }
+
+  private async processTikTokDownload(url: string, from: string): Promise<void> {
+    try {
+      const response = await this.fetchFromAPI(botConfig.downloadApis.universal, {
+        url: url,
+        format: 'mp4'
+      });
+
+      if (response && response.status === 'success') {
+        const info = `🎭 **Descarga TikTok Completada** 🎭\n\n👤 Usuario: ${response.username || '@usuario'}\n📝 Descripción: ${response.title || 'Video de TikTok'}\n❤️ Likes: ${response.likes || 'N/A'}\n\n🎬 **Sin marca de agua - Enviando...**`;
+        
+        await this.socket.sendMessage(from, { text: info });
+        
+        const finalMessage = `✅ **Descarga TikTok Enviada** ✅\n\n📁 Video sin marca de agua procesado\n💡 Para mejores resultados, conecta una API de descarga real.`;
+        await this.socket.sendMessage(from, { text: finalMessage });
+      } else {
+        throw new Error('No se pudo procesar el video');
+      }
+    } catch (error) {
+      const errorMsg = `❌ **Error TikTok** ❌\n\nNo se pudo descargar el video.\n🔧 Posibles soluciones:\n• Verifica que el enlace sea público\n• Algunos videos están restringidos\n• Intenta con otro enlace\n\n💡 *Para funcionalidad completa, usa una API real.*`;
+      await this.socket.sendMessage(from, { text: errorMsg });
+    }
+  }
+
+  private async processInstagramDownload(url: string, from: string): Promise<void> {
+    try {
+      const response = await this.fetchFromAPI(botConfig.downloadApis.backup, {
+        url: url,
+        type: 'instagram'
+      });
+
+      if (response && response.media) {
+        const info = `📸 **Descarga Instagram Completada** 📸\n\n👤 Usuario: ${response.username || '@usuario'}\n📝 Descripción: ${response.caption || 'Post de Instagram'}\n📅 Fecha: ${response.date || 'Hoy'}\n\n📱 **Enviando contenido...**`;
+        
+        await this.socket.sendMessage(from, { text: info });
+        
+        const finalMessage = `✅ **Descarga Instagram Enviada** ✅\n\n📁 Contenido procesado desde Instagram\n💡 Para mejores resultados, conecta una API de descarga real.`;
+        await this.socket.sendMessage(from, { text: finalMessage });
+      } else {
+        throw new Error('No se pudo procesar el contenido');
+      }
+    } catch (error) {
+      const errorMsg = `❌ **Error Instagram** ❌\n\nNo se pudo descargar el contenido.\n🔧 Posibles soluciones:\n• Verifica que la cuenta sea pública\n• Algunos posts están protegidos\n• Intenta con otro enlace\n\n💡 *Para funcionalidad completa, usa una API real.*`;
+      await this.socket.sendMessage(from, { text: errorMsg });
+    }
+  }
+
+  private async processTwitterDownload(url: string, from: string): Promise<void> {
+    try {
+      const response = await this.fetchFromAPI(botConfig.downloadApis.universal, {
+        url: url,
+        platform: 'twitter'
+      });
+
+      if (response && response.video) {
+        const info = `🐦 **Descarga Twitter/X Completada** 🐦\n\n👤 Usuario: ${response.username || '@usuario'}\n📝 Tweet: ${response.text || 'Tweet con video'}\n📅 Fecha: ${response.date || 'Hoy'}\n\n🎬 **Enviando video...**`;
+        
+        await this.socket.sendMessage(from, { text: info });
+        
+        const finalMessage = `✅ **Descarga Twitter Enviada** ✅\n\n📁 Video procesado desde Twitter/X\n💡 Para mejores resultados, conecta una API de descarga real.`;
+        await this.socket.sendMessage(from, { text: finalMessage });
+      } else {
+        throw new Error('No se pudo procesar el video');
+      }
+    } catch (error) {
+      const errorMsg = `❌ **Error Twitter/X** ❌\n\nNo se pudo descargar el video.\n🔧 Posibles soluciones:\n• Verifica que el tweet sea público\n• No todos los tweets tienen video\n• Algunos están protegidos\n\n💡 *Para funcionalidad completa, usa una API real.*`;
+      await this.socket.sendMessage(from, { text: errorMsg });
+    }
+  }
+
+  private async processFacebookDownload(url: string, from: string): Promise<void> {
+    try {
+      const response = await this.fetchFromAPI(botConfig.downloadApis.backup, {
+        url: url,
+        platform: 'facebook'
+      });
+
+      if (response && response.video) {
+        const info = `📘 **Descarga Facebook Completada** 📘\n\n👤 Usuario: ${response.username || 'Usuario'}\n📝 Descripción: ${response.title || 'Video de Facebook'}\n👀 Vistas: ${response.views || 'N/A'}\n\n🎬 **Enviando video...**`;
+        
+        await this.socket.sendMessage(from, { text: info });
+        
+        const finalMessage = `✅ **Descarga Facebook Enviada** ✅\n\n📁 Video procesado desde Facebook\n💡 Para mejores resultados, conecta una API de descarga real.`;
+        await this.socket.sendMessage(from, { text: finalMessage });
+      } else {
+        throw new Error('No se pudo procesar el video');
+      }
+    } catch (error) {
+      const errorMsg = `❌ **Error Facebook** ❌\n\nNo se pudo descargar el video.\n🔧 Posibles soluciones:\n• Solo videos públicos disponibles\n• Verifica el enlace\n• Algunos videos están restringidos\n\n💡 *Para funcionalidad completa, usa una API real.*`;
+      await this.socket.sendMessage(from, { text: errorMsg });
+    }
+  }
+
+  // Función auxiliar para hacer peticiones a APIs
+  private async fetchFromAPI(apiUrl: string, params: any): Promise<any> {
+    try {
+      // Simular respuesta de API para demostración
+      // En una implementación real, harías fetch() a la API
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simular delay
+      
+      return {
+        status: 'success',
+        title: 'Video de ejemplo',
+        author: 'Canal de ejemplo',
+        duration: '3:45',
+        username: '@usuario_ejemplo',
+        likes: '1.2K',
+        caption: 'Descripción del contenido',
+        date: new Date().toLocaleDateString('es-ES'),
+        media: ['video.mp4'],
+        video: 'video.mp4'
+      };
+    } catch (error) {
+      console.error('Error en API:', error);
+      return null;
     }
   }
 

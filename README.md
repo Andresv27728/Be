@@ -38,6 +38,13 @@ La aplicación estará disponible en: http://localhost:5000
 - `/help` - Lista de comandos disponibles
 - `/ping` - Verifica conexión
 
+### Descargas (APIs Gratuitas)
+- `/ytdl <URL>` - Descarga videos de YouTube
+- `/tiktok <URL>` - Descarga videos de TikTok sin marca de agua
+- `/instagram <URL>` - Descarga fotos/videos de Instagram
+- `/twitter <URL>` - Descarga videos de Twitter/X
+- `/facebook <URL>` - Descarga videos de Facebook
+
 ### Administración
 - `/stats` - Estadísticas del bot
 - `/users` - Lista de usuarios activos

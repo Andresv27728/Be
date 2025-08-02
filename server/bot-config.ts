@@ -21,6 +21,16 @@ export const botConfig = {
     author: 'Replit Team',
   },
   
+  // APIs gratuitas para descargas
+  downloadApis: {
+    // API gratuita para YouTube - usa yt-dlp público
+    youtube: 'https://api.cobalt.tools/api/json',
+    // API alternativa para múltiples plataformas
+    universal: 'https://api.savetext.me/v1',
+    // API de respaldo
+    backup: 'https://api.downloadgram.org/media',
+  },
+  
   // Comandos disponibles con sus prefijos
   commands: {
     help: {
@@ -72,6 +82,31 @@ export const botConfig = {
       aliases: ['calculadora', 'math'],
       description: 'Calcula operaciones matemáticas',
       category: 'utilidades',
+    },
+    ytdl: {
+      aliases: ['youtube', 'yt', 'download'],
+      description: 'Descarga audio/video de YouTube',
+      category: 'descargas',
+    },
+    tiktok: {
+      aliases: ['tt', 'tik'],
+      description: 'Descarga videos de TikTok',
+      category: 'descargas',
+    },
+    instagram: {
+      aliases: ['ig', 'insta'],
+      description: 'Descarga videos/fotos de Instagram',
+      category: 'descargas',
+    },
+    twitter: {
+      aliases: ['x', 'tweet'],
+      description: 'Descarga videos de Twitter/X',
+      category: 'descargas',
+    },
+    facebook: {
+      aliases: ['fb'],
+      description: 'Descarga videos de Facebook',
+      category: 'descargas',
     },
     perfil: {
       aliases: ['profile', 'yo'],
@@ -162,9 +197,21 @@ export function formatCommandList(): string {
       .filter(([_, cmd]) => cmd.category === category);
     
     if (categoryCommands.length > 0) {
-      helpText += `📂 **${category.toUpperCase()}:**\n`;
+      // Usar emojis específicos para cada categoría
+      const categoryEmojis: Record<string, string> = {
+        'general': '📋',
+        'juegos': '🎮',
+        'utilidades': '🛠️',
+        'descargas': '📥',
+        'diversión': '🎭',
+        'entretenimiento': '🎵'
+      };
+      
+      const emoji = categoryEmojis[category] || '📂';
+      helpText += `${emoji} **${category.toUpperCase()}:**\n`;
+      
       categoryCommands.forEach(([name, cmd]) => {
-        helpText += `${botConfig.defaultPrefix}${name} - ${cmd.description}\n`;
+        helpText += `• ${botConfig.defaultPrefix}${name} - ${cmd.description}\n`;
         if (cmd.aliases.length > 0) {
           helpText += `   └ Alias: ${cmd.aliases.map(alias => `${botConfig.defaultPrefix}${alias}`).join(', ')}\n`;
         }
