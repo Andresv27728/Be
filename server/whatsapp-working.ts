@@ -105,7 +105,13 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
           const boom = lastDisconnect?.error as any;
           const shouldReconnect = boom?.output?.statusCode !== DisconnectReason.loggedOut;
           
-          logger.botConnection('disconnected', `Reconectar: ${shouldReconnect}`);
+          logger.botConnection('disconnected', `Reconectar: ${shouldReconnect} - Error: ${boom?.message || 'Unknown'}`);
+          console.log('Disconnect details:', {
+            statusCode: boom?.output?.statusCode,
+            message: boom?.message,
+            stack: boom?.stack
+          });
+          
           this.isConnected = false;
           this.connectionMethod = null;
           this.qrCode = null;

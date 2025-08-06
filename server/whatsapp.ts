@@ -2,13 +2,13 @@ import { EventEmitter } from 'events';
 import { 
   default as makeWASocket,
   DisconnectReason, 
-  ConnectionState,
-  WAMessage,
-  WASocket,
   useMultiFileAuthState,
-  BaileysEventMap,
-  MessageUpsertType,
-  Browsers
+  Browsers,
+  type ConnectionState,
+  type WAMessage,
+  type WASocket,
+  type BaileysEventMap,
+  type MessageUpsertType
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import * as qrcode from 'qrcode';

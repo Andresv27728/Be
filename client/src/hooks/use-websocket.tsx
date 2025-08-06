@@ -97,6 +97,32 @@ export function useWebSocket() {
         queryClient.invalidateQueries({ queryKey: ["/api/activity/recent"] });
         break;
 
+      case "qr_ready":
+      case "qr_code":
+        queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
+        toast({
+          title: "📱 Código QR Disponible",
+          description: "Escanea el código QR para conectar WhatsApp",
+        });
+        break;
+
+      case "bot_disconnected":
+        queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
+        toast({
+          title: "🔌 Bot Desconectado",
+          description: "El bot se ha desconectado de WhatsApp",
+          variant: "destructive",
+        });
+        break;
+
+      case "pairing_code_ready":
+        queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
+        toast({
+          title: "🔐 Código PIN Generado",
+          description: `Código: ${message.data.pairingCode}`,
+        });
+        break;
+
       case "command_executed":
         queryClient.invalidateQueries({ queryKey: ["/api/commands"] });
         queryClient.invalidateQueries({ queryKey: ["/api/statistics/today"] });
@@ -110,18 +136,6 @@ export function useWebSocket() {
       case "stats_update":
       case "statistics_update":
         queryClient.invalidateQueries({ queryKey: ["/api/statistics/today"] });
-        break;
-
-      case "pairing_code_ready":
-        toast({
-          title: "🔗 Código de Vinculación Generado",
-          description: `Código: ${message.data.pairingCode} para ${message.data.phoneNumber}`,
-          duration: 10000,
-        });
-        break;
-
-      case "qr_ready":
-        queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
         break;
 
       default:
