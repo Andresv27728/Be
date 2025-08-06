@@ -1,8 +1,24 @@
-import makeWASocket, { 
-  DisconnectReason,
-  useMultiFileAuthState,
-  fetchLatestBaileysVersion
-} from '@whiskeysockets/baileys';
+// Fix for platform compatibility
+let makeWASocket: any;
+let DisconnectReason: any;
+let useMultiFileAuthState: any;
+let fetchLatestBaileysVersion: any;
+
+try {
+  // Try modern import first
+  const BaileysModule = await import('@whiskeysockets/baileys');
+  makeWASocket = BaileysModule.default;
+  DisconnectReason = BaileysModule.DisconnectReason;
+  useMultiFileAuthState = BaileysModule.useMultiFileAuthState;
+  fetchLatestBaileysVersion = BaileysModule.fetchLatestBaileysVersion;
+} catch (error) {
+  // Fallback to require for compatibility
+  const baileys = require('@whiskeysockets/baileys');
+  makeWASocket = baileys.default || baileys;
+  DisconnectReason = baileys.DisconnectReason;
+  useMultiFileAuthState = baileys.useMultiFileAuthState;
+  fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
+}
 import type { 
   ConnectionState,
   WAMessageKey,
