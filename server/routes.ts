@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import whatsappBot from "./whatsapp-working";
+import CleanWhatsAppBot from "./whatsapp-clean";
 import { insertMessageSchema, insertUserSchema, insertGroupSchema, insertCommandSchema } from "../shared/schema";
 import { z } from "zod";
 
@@ -153,26 +153,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // WhatsApp Bot Event Listeners
-  whatsappBot.on('status', (status) => {
-    broadcast({
-      type: 'bot_status_update',
-      data: status
-    });
-  });
-
-  whatsappBot.on('qr', (qrCode) => {
-    broadcast({
-      type: 'qr_code',
-      data: { qrCode }
-    });
-  });
-
-  whatsappBot.on('connected', () => {
-    broadcast({
-      type: 'bot_connected',
-      data: { timestamp: new Date() }
-    });
+  // Create WhatsApp Bot instance and start it
+  const whatsappBot = new CleanWhatsAppBot();
+  
+  // Initialize bot connection
+  whatsappBot.connect().catch(error => {
+    console.error('Error starting WhatsApp bot:', error);
   });
 
   // Configurar eventos del bot
@@ -204,11 +190,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  whatsappBot.on('message_received', (messageData) => {
-    broadcast({
-      type: 'new_message',
-      data: messageData
-    });
+  // Real-time message synchronization
+  whatsappBot.on('message_received', async (messageData) => {
+    try {
+      // Store message in database
+      await storage.createMessage({
+        groupId: messageData.groupId,
+        userId: messageData.userId,
+        content: messageData.content,
+        messageType: messageData.messageType,
+        isFromBot: messageData.isFromBot,
+        metadata: messageData.metadata || {}
+      });
+
+      // Update statistics
+      const today = new Date().toISOString().split('T')[0];
+      await storage.createOrUpdateStatistics({
+        date: today,
+        totalMessages: 1,
+        totalCommands: 0,
+        activeUsers: 1,
+        activeGroups: messageData.isGroup ? 1 : 0
+      });
+
+      // Broadcast to dashboard
+      broadcast({
+        type: 'new_message',
+        data: {
+          ...messageData,
+          timestamp: messageData.timestamp.toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error processing message:', error);
+    }
+  });
+
+  whatsappBot.on('message_sent', async (messageData) => {
+    try {
+      // Store bot message in database
+      await storage.createMessage({
+        groupId: messageData.groupId,
+        userId: 'bot',
+        content: messageData.content,
+        messageType: messageData.messageType,
+        isFromBot: true,
+        metadata: messageData.metadata || {}
+      });
+
+      // Broadcast to dashboard
+      broadcast({
+        type: 'bot_message_sent',
+        data: {
+          ...messageData,
+          timestamp: messageData.timestamp.toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error processing bot message:', error);
+    }
+  });
+
+  whatsappBot.on('command_executed', async (commandData) => {
+    try {
+      // Update command usage statistics
+      await storage.incrementCommandUsage(commandData.command);
+
+      // Update daily statistics
+      const today = new Date().toISOString().split('T')[0];
+      await storage.createOrUpdateStatistics({
+        date: today,
+        totalMessages: 0,
+        totalCommands: 1,
+        activeUsers: 1,
+        activeGroups: commandData.isGroup ? 1 : 0
+      });
+
+      // Broadcast command execution
+      broadcast({
+        type: 'command_executed',
+        data: {
+          ...commandData,
+          timestamp: commandData.timestamp.toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error processing command:', error);
+    }
   });
 
   whatsappBot.on('error', (error) => {

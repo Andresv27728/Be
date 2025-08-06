@@ -153,19 +153,30 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
                            message.message.extendedTextMessage?.text || '';
             
             const from = message.key.remoteJid;
+            const isGroup = from?.endsWith('@g.us');
+            const pushName = message.pushName || 'Usuario';
+            const phone = from?.replace('@s.whatsapp.net', '').replace('@g.us', '');
             
             logger.botMessage(from!, content, 'incoming');
             
+            // Emitir evento completo para sincronización en tiempo real
             this.emit('message_received', {
+              id: message.key.id || Date.now().toString(),
+              groupId: isGroup ? from : null,
+              userId: isGroup ? message.key.participant?.replace('@s.whatsapp.net', '') : phone,
+              content: content.trim(),
+              messageType: 'text',
+              isFromBot: false,
+              timestamp: new Date(message.messageTimestamp * 1000 || Date.now()),
+              senderName: pushName,
               from,
-              content,
-              message,
-              isGroup: from?.endsWith('@g.us')
+              isGroup,
+              rawMessage: message
             });
 
-            // Procesar comandos con cualquier prefijo válido
+            // Si es comando, procesarlo
             if (isValidCommand(content)) {
-              await this.handleCommand(from!, content);
+              await this.handleCommand(from!, content, pushName, phone);
             }
           }
         }
@@ -320,7 +331,7 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
     }
   }
 
-  private async handleCommand(from: string, commandText: string): Promise<void> {
+  private async handleCommand(from: string, commandText: string, senderName?: string, phone?: string): Promise<void> {
     if (!this.socket) return;
 
     const commandData = extractCommand(commandText);
@@ -328,6 +339,20 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
 
     const { command, args } = commandData;
     let response = '';
+    
+    const isGroup = from.endsWith('@g.us');
+    const userId = phone || from.replace('@s.whatsapp.net', '');
+    
+    // Emitir evento antes del procesamiento
+    this.emit('command_start', {
+      command,
+      args,
+      from,
+      userId,
+      senderName: senderName || 'Usuario',
+      isGroup,
+      timestamp: new Date()
+    });
     
     // Buscar comando principal o alias
     const commandConfig = Object.entries(botConfig.commands).find(([name, config]) => 
@@ -500,7 +525,61 @@ class WorkingWhatsAppBotImpl extends EventEmitter implements WorkingWhatsAppBot 
           response = `🕐 **Hora Actual** 🕐\n\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n🌍 Zona: GMT-5 (Lima, Perú)`;
           break;
 
-        case 'ytdl':
+        default:
+          response = `🦈 Comando "${command}" no encontrado.\n💡 Usa /help para ver comandos disponibles.\n📝 Prefijos válidos: ${botConfig.prefixes.join(', ')}`;
+      }
+    } else {
+      response = `🦈 Comando "${command}" no encontrado.\n💡 Usa /help para ver comandos disponibles.\n📝 Prefijos válidos: ${botConfig.prefixes.join(', ')}`;
+    }
+
+    if (response) {
+      try {
+        // Enviar respuesta
+        await this.socket.sendMessage(from, { text: response });
+        logger.botMessage(from, response, 'outgoing');
+        
+        // Emitir evento de comando ejecutado
+        this.emit('command_executed', {
+          command,
+          args,
+          from,
+          userId,
+          senderName: senderName || 'Usuario',
+          isGroup,
+          response,
+          timestamp: new Date(),
+          success: true
+        });
+        
+        // Emitir evento de mensaje enviado
+        this.emit('message_sent', {
+          id: Date.now().toString(),
+          groupId: isGroup ? from : null,
+          userId: 'bot',
+          content: response,
+          messageType: 'command',
+          isFromBot: true,
+          timestamp: new Date(),
+          metadata: { command, originalMessage: commandText }
+        });
+        
+      } catch (error) {
+        logger.error('Error enviando respuesta', error);
+        this.emit('command_executed', {
+          command,
+          args,
+          from,
+          userId,
+          senderName: senderName || 'Usuario',
+          isGroup,
+          response: '',
+          timestamp: new Date(),
+          success: false,
+          error: error instanceof Error ? error.message : 'Error desconocido'
+        });
+      }
+    }
+  }
         case 'youtube':
         case 'yt':
         case 'download':
