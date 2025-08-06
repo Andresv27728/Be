@@ -1,9 +1,8 @@
-const { 
-  default: makeWASocket,
+import makeWASocket, { 
   DisconnectReason,
   useMultiFileAuthState,
   fetchLatestBaileysVersion
-} = require('@whiskeysockets/baileys');
+} from '@whiskeysockets/baileys';
 import type { 
   ConnectionState,
   WAMessageKey,
@@ -376,13 +375,13 @@ class CleanWhatsAppBot extends EventEmitter implements WhatsAppBot {
       const fs = await import('fs');
       const path = await import('path');
       
-      const authDir = path.join(process.cwd(), 'auth_info');
+      const authDir = path.default.join(process.cwd(), 'auth_info');
       
-      if (fs.existsSync(authDir)) {
+      if (fs.default.existsSync(authDir)) {
         // Eliminar todos los archivos de autenticación
-        const files = fs.readdirSync(authDir);
+        const files = fs.default.readdirSync(authDir);
         for (const file of files) {
-          fs.unlinkSync(path.join(authDir, file));
+          fs.default.unlinkSync(path.default.join(authDir, file));
         }
         botLogger.connection('auth_cleared', 'Archivos de autenticación eliminados');
       }
