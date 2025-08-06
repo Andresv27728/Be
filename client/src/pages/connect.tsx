@@ -46,6 +46,29 @@ export default function Connect() {
     },
   });
 
+  const restartMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/bot/restart", {});
+    },
+    onSuccess: () => {
+      setIsConnecting(false);
+      setPairingCode("");
+      setPhoneNumber("");
+      toast({
+        title: "🔄 Bot Reiniciado",
+        description: "El bot ha sido reiniciado. Genera un nuevo código para conectar.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo reiniciar el bot",
+      });
+    },
+  });
+
   const disconnectMutation = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", "/api/bot/disconnect", {});
@@ -167,24 +190,44 @@ export default function Connect() {
                         Uptime: {Math.floor((botStatus.uptime || 0) / 60)}m
                       </Badge>
                     </div>
-                    <Button 
-                      onClick={() => disconnectMutation.mutate()}
-                      disabled={disconnectMutation.isPending}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      <i className="fas fa-power-off mr-2"></i>
-                      Desconectar
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => disconnectMutation.mutate()}
+                        disabled={disconnectMutation.isPending}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        <i className="fas fa-power-off mr-2"></i>
+                        Desconectar
+                      </Button>
+                      <Button 
+                        onClick={() => restartMutation.mutate()}
+                        disabled={restartMutation.isPending}
+                        variant="outline"
+                        className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+                      >
+                        🔄 Reiniciar
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <Button 
-                    onClick={() => connectMutation.mutate()}
-                    disabled={connectMutation.isPending || isConnecting}
-                    className="ocean-gradient text-white"
-                  >
-                    <Wifi className="w-4 h-4 mr-2" />
-                    {isConnecting ? 'Conectando...' : 'Conectar'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => connectMutation.mutate()}
+                      disabled={connectMutation.isPending || isConnecting}
+                      className="ocean-gradient text-white flex-1"
+                    >
+                      <Wifi className="w-4 h-4 mr-2" />
+                      {isConnecting ? 'Conectando...' : 'Conectar'}
+                    </Button>
+                    <Button 
+                      onClick={() => restartMutation.mutate()}
+                      disabled={restartMutation.isPending}
+                      variant="outline"
+                      className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+                    >
+                      🔄
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardContent>

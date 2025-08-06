@@ -138,6 +138,37 @@ export function useWebSocket() {
         queryClient.invalidateQueries({ queryKey: ["/api/statistics/today"] });
         break;
 
+      case "session_cleared":
+        toast({
+          title: "🔄 Sesión Limpiada",
+          description: "Los archivos de autenticación fueron eliminados. Genera un nuevo código QR o PIN.",
+          variant: "default",
+        });
+        // Force refresh of connection page and queries
+        queryClient.invalidateQueries({ queryKey: ["/api/bot/status"] });
+        if (window.location.pathname === '/connect') {
+          window.location.reload();
+        }
+        break;
+
+      case "command_created":
+      case "command_updated":
+      case "command_deleted":
+        queryClient.invalidateQueries({ queryKey: ["/api/commands"] });
+        toast({
+          title: "✅ Comando Actualizado",
+          description: "La lista de comandos ha sido actualizada",
+        });
+        break;
+
+      case "bot_error":
+        toast({
+          title: "🚨 Error del Bot",
+          description: message.data.error,
+          variant: "destructive",
+        });
+        break;
+
       default:
         console.log("Unknown WebSocket message type:", message.type);
     }

@@ -1,7 +1,9 @@
-import makeWASocket, { 
+const { 
+  default: makeWASocket,
   DisconnectReason,
-  useMultiFileAuthState
-} from '@whiskeysockets/baileys';
+  useMultiFileAuthState,
+  fetchLatestBaileysVersion
+} = require('@whiskeysockets/baileys');
 import type { 
   ConnectionState,
   WAMessageKey,
@@ -65,6 +67,7 @@ export interface WhatsAppBot {
   on(event: 'message_sent', listener: (data: any) => void): this;
   on(event: 'command_executed', listener: (data: any) => void): this;
   on(event: 'error', listener: (error: Error) => void): this;
+  on(event: 'session_cleared', listener: (data: { reason: string }) => void): this;
 }
 
 class CleanWhatsAppBot extends EventEmitter implements WhatsAppBot {
@@ -85,8 +88,10 @@ class CleanWhatsAppBot extends EventEmitter implements WhatsAppBot {
   async connect(): Promise<void> {
     try {
       const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+      const { version } = await fetchLatestBaileysVersion();
       
       this.socket = makeWASocket({
+        version,
         auth: state,
         printQRInTerminal: false,
         logger,
@@ -121,6 +126,11 @@ class CleanWhatsAppBot extends EventEmitter implements WhatsAppBot {
           
           if (shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
             this.scheduleReconnect();
+          } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            // Si falló todos los intentos de reconexión, limpiar sesión
+            await this.clearAuthSession();
+            botLogger.connection('session_cleared', 'Limpiando sesión después de múltiples fallos');
+            this.emit('session_cleared', { reason: 'max_reconnect_attempts' });
           }
         } else if (connection === 'open') {
           this.isConnected = true;
@@ -359,6 +369,54 @@ class CleanWhatsAppBot extends EventEmitter implements WhatsAppBot {
         });
       }
     }
+  }
+
+  private async clearAuthSession(): Promise<void> {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const authDir = path.join(process.cwd(), 'auth_info');
+      
+      if (fs.existsSync(authDir)) {
+        // Eliminar todos los archivos de autenticación
+        const files = fs.readdirSync(authDir);
+        for (const file of files) {
+          fs.unlinkSync(path.join(authDir, file));
+        }
+        botLogger.connection('auth_cleared', 'Archivos de autenticación eliminados');
+      }
+      
+      // Reset internal state
+      this.reconnectAttempts = 0;
+      this.isConnected = false;
+      this.connectionMethod = null;
+      this.qrCode = null;
+      this.pairingCode = null;
+      
+    } catch (error) {
+      botLogger.error('Error limpiando sesión', error);
+    }
+  }
+
+  async forceRestart(): Promise<void> {
+    botLogger.connection('force_restart', 'Reinicio forzado del bot');
+    
+    // Clear current session
+    await this.clearAuthSession();
+    
+    // Disconnect current socket
+    this.disconnect();
+    
+    // Reset reconnection attempts
+    this.reconnectAttempts = 0;
+    
+    // Start fresh connection
+    setTimeout(() => {
+      this.connect().catch(error => {
+        botLogger.error('Error en reinicio forzado', error);
+      });
+    }, 2000);
   }
 }
 

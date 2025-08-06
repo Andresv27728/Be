@@ -289,9 +289,39 @@ export class MemStorage implements IStorage {
     // Actualizar estadísticas cada 10 segundos para que se vean más dinámicas
     this.statsUpdateInterval = setInterval(() => {
       const today = new Date().toISOString().split('T')[0];
-      const updatedStats = this.generateRealtimeStatistics(today);
+      // Solo generar estadísticas realistas si el bot está conectado
+      const updatedStats = this.botStatus?.isConnected 
+        ? this.generateRealtimeStatistics(today) 
+        : this.generateZeroStatistics(today);
       this.statistics.set(today, updatedStats);
     }, 10000);
+  }
+
+  private generateZeroStatistics(date: string): Statistics {
+    return {
+      id: this.statistics.get(date)?.id || randomUUID(),
+      date: date,
+      totalMessages: 0,
+      totalCommands: 0,
+      activeUsers: 0,
+      activeGroups: 0,
+      hourlyData: this.generateZeroHourlyData(),
+    };
+  }
+
+  private generateZeroHourlyData(): Record<string, { messages: number; commands: number; users: number }> {
+    const hourlyData: Record<string, { messages: number; commands: number; users: number }> = {};
+    
+    for (let i = 0; i < 24; i++) {
+      const hour = i.toString().padStart(2, '0');
+      hourlyData[hour] = {
+        messages: 0,
+        commands: 0,
+        users: 0,
+      };
+    }
+    
+    return hourlyData;
   }
 
   // Método para limpiar el intervalo si es necesario
@@ -435,6 +465,14 @@ export class MemStorage implements IStorage {
       command.usageCount++;
       command.lastUsed = new Date();
     }
+  }
+
+  async deleteCommand(id: string): Promise<boolean> {
+    const command = Array.from(this.commands.values()).find(cmd => cmd.id === id);
+    if (!command) return false;
+    
+    this.commands.delete(command.name);
+    return true;
   }
 
   // Statistics

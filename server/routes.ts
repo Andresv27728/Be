@@ -286,6 +286,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  whatsappBot.on('session_cleared', (data) => {
+    broadcast({
+      type: 'session_cleared',
+      data: { ...data, timestamp: new Date() }
+    });
+  });
+
   // Admin Authentication
   app.post("/api/admin/auth", async (req, res) => {
     try {
@@ -363,6 +370,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ error: "Error conectando con PIN" });
+    }
+  });
+
+  // Force restart bot connection
+  app.post("/api/bot/restart", async (req, res) => {
+    try {
+      await whatsappBot.forceRestart();
+      
+      const status = await storage.updateBotStatus({
+        isConnected: false,
+        connectionMethod: null,
+        qrCode: null,
+        pinCode: null
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Bot reiniciado. Genera un nuevo código QR o PIN para conectar.",
+        status 
+      });
+    } catch (error) {
+      console.error('Error restarting bot:', error);
+      res.status(500).json({ error: "Error reiniciando bot" });
     }
   });
 
@@ -498,6 +528,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const commandData = insertCommandSchema.parse(req.body);
       const command = await storage.createCommand(commandData);
+      
+      broadcast({
+        type: 'command_created',
+        data: { command, timestamp: new Date() }
+      });
+      
       res.json(command);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -508,16 +544,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/commands/:id", async (req, res) => {
+  app.put("/api/commands/:id", async (req, res) => {
     try {
       const updates = req.body;
       const command = await storage.updateCommand(req.params.id, updates);
       if (!command) {
         return res.status(404).json({ error: "Command not found" });
       }
+      
+      broadcast({
+        type: 'command_updated',
+        data: { command, timestamp: new Date() }
+      });
+      
       res.json(command);
     } catch (error) {
       res.status(500).json({ error: "Failed to update command" });
+    }
+  });
+
+  app.delete("/api/commands/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCommand(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Command not found" });
+      }
+      
+      broadcast({
+        type: 'command_deleted',
+        data: { commandId: id, timestamp: new Date() }
+      });
+      
+      res.json({ success: true, message: "Command deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete command" });
     }
   });
 
