@@ -10,7 +10,7 @@ export const users = pgTable("users", {
   phone: text("phone"),
   level: integer("level").default(1),
   experience: integer("experience").default(0),
-  role: text("role").default("member"), // member, admin, owner
+  role: text("role").default("member"), // member, admin, owner, premium
   isActive: boolean("is_active").default(true),
   lastSeen: timestamp("last_seen").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),

@@ -1,4 +1,5 @@
 import { WAMessage, WASocket } from '@whiskeysockets/baileys';
+import { storage } from '../storage';
 
 export interface CommandHandler {
   name: string;
@@ -186,6 +187,32 @@ export const basicCommands: CommandHandler[] = [
 
       await socket.sendMessage(message.key.remoteJid!, {
         text: `⚠️ **Advertencia para ${userMention}**\n\nPor favor respeta las reglas del grupo. Esta es tu advertencia oficial.\n\n🦈 - Gawr Gura Bot`
+      });
+    }
+  },
+  {
+    name: 'createsubbot',
+    description: 'Crea un nuevo sub-bot',
+    category: 'admin',
+    handler: async (socket, message, args) => {
+      const userId = message.key.remoteJid;
+      if (!userId) {
+        await socket.sendMessage(message.key.remoteJid!, {
+          text: 'Error: No se pudo obtener el ID del usuario.'
+        });
+        return;
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== 'premium') {
+        await socket.sendMessage(message.key.remoteJid!, {
+          text: '🚨 Este comando es solo para usuarios premium.'
+        });
+        return;
+      }
+
+      await socket.sendMessage(message.key.remoteJid!, {
+        text: '¡Felicidades! 🎉 Tu sub-bot ha sido creado y está siendo configurado. Recibirás una notificación cuando esté listo.'
       });
     }
   }
