@@ -7,17 +7,20 @@ let fetchLatestBaileysVersion: any;
 try {
   // Try modern import first
   const BaileysModule = await import('@whiskeysockets/baileys');
-  makeWASocket = BaileysModule.default;
-  DisconnectReason = BaileysModule.DisconnectReason;
-  useMultiFileAuthState = BaileysModule.useMultiFileAuthState;
-  fetchLatestBaileysVersion = BaileysModule.fetchLatestBaileysVersion;
+  // Handle both default export as a function or as an object containing the functions
+  const baileys = BaileysModule.default;
+  makeWASocket = typeof baileys === 'function' ? baileys : baileys.makeWASocket;
+  DisconnectReason = BaileysModule.DisconnectReason || baileys.DisconnectReason;
+  useMultiFileAuthState = BaileysModule.useMultiFileAuthState || baileys.useMultiFileAuthState;
+  fetchLatestBaileysVersion = BaileysModule.fetchLatestBaileysVersion || baileys.fetchLatestBaileysVersion;
 } catch (error) {
   // Fallback to require for compatibility
   const baileys = require('@whiskeysockets/baileys');
-  makeWASocket = baileys.default || baileys;
-  DisconnectReason = baileys.DisconnectReason;
-  useMultiFileAuthState = baileys.useMultiFileAuthState;
-  fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
+  const b = baileys.default || baileys;
+  makeWASocket = typeof b === 'function' ? b : b.makeWASocket;
+  DisconnectReason = b.DisconnectReason;
+  useMultiFileAuthState = b.useMultiFileAuthState;
+  fetchLatestBaileysVersion = b.fetchLatestBaileysVersion;
 }
 import type { 
   ConnectionState,
