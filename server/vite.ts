@@ -76,10 +76,36 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, {
+    index: false,
+    // Add cache headers for static assets
+    maxAge: '1d',
+    setHeaders: (res, path) => {
+      if (path.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    }
+  }));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  app.use("*", (req, res, next) => {
+    // Only serve index.html for GET requests that accept HTML
+    // This prevents serving HTML when an asset (JS/CSS) fails to load,
+    // which often causes "Unexpected token '<'" errors and blank screens.
+    const isGet = req.method === "GET";
+    const acceptsHtml = req.headers.accept?.includes("text/html");
+    const isFileRequest = req.path.includes(".");
+
+    if (isGet && acceptsHtml && !isFileRequest) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.sendFile(path.resolve(distPath, "index.html"));
+    } else {
+      // If it's a file request that wasn't found by express.static, return 404
+      if (isFileRequest) {
+        res.status(404).end("Not Found");
+      } else {
+        next();
+      }
+    }
   });
 }
