@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/hooks/use-websocket";
-import { QrCode, Smartphone, Wifi, Copy } from "lucide-react";
+import { QrCode, Smartphone, Wifi, Copy, RefreshCw, LogOut, RotateCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Connect() {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -122,7 +123,6 @@ export default function Connect() {
     },
   });
 
-  // Stop showing connecting state when bot connects
   useEffect(() => {
     if (botStatus?.isConnected) {
       setIsConnecting(false);
@@ -131,187 +131,259 @@ export default function Connect() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 bg-slate-900 min-h-screen">
         <div className="max-w-4xl mx-auto">
-          <Skeleton className="h-96 w-full bg-slate-800" />
+          <Skeleton className="h-96 w-full bg-slate-800 rounded-3xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 p-4 md:p-8 bg-slate-900 min-h-screen">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Conexión WhatsApp</h1>
-          <p className="text-slate-400">Conecta tu bot de Gawr Gura a WhatsApp</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-black text-white mb-2 tracking-tight flex items-center">
+            <Wifi className="mr-3 text-teal-400" /> CONEXIÓN WHATSAPP
+          </h1>
+          <p className="text-slate-400 font-medium">Vincula tu cuenta para activar las funciones del bot</p>
+        </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Connection Status */}
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <div className={`w-4 h-4 rounded-full mr-3 ${
-                  botStatus?.isConnected ? 'bg-green-500' : 'bg-red-500'
-                }`}></div>
-                Estado de Conexión
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                  botStatus?.isConnected ? 'bg-green-600' : isConnecting ? 'bg-yellow-600' : 'bg-red-600'
-                }`}>
-                  <i className={`fas ${
-                    botStatus?.isConnected ? 'fa-check' : isConnecting ? 'fa-spinner fa-spin' : 'fa-times'
-                  } text-white text-2xl`}></i>
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {botStatus?.isConnected ? 'WhatsApp Conectado' : 
-                   isConnecting ? 'Conectando...' : 'Desconectado'}
-                </h3>
-                
-                <p className="text-slate-400 mb-6">
-                  {botStatus?.isConnected ? 'El bot está funcionando correctamente' :
-                   isConnecting ? 'Esperando escaneo del código QR' :
-                   'Haz clic en "Conectar" para iniciar'}
-                </p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-md h-full">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center text-lg uppercase tracking-wider">
+                  <div className={`w-3 h-3 rounded-full mr-3 ${
+                    botStatus?.isConnected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
+                  }`}></div>
+                  Estado del Enlace
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <motion.div
+                    animate={isConnecting ? { rotate: 360 } : {}}
+                    transition={isConnecting ? { repeat: Infinity, duration: 2, ease: "linear" } : {}}
+                    className={`w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 ${
+                      botStatus?.isConnected ? 'bg-green-500/20 text-green-400' : isConnecting ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
+                    } border border-current transition-colors duration-500`}
+                  >
+                    {botStatus?.isConnected ? (
+                      <Wifi className="w-10 h-10" />
+                    ) : isConnecting ? (
+                      <RotateCw className="w-10 h-10" />
+                    ) : (
+                      <LogOut className="w-10 h-10" />
+                    )}
+                  </motion.div>
 
-                {botStatus?.isConnected ? (
+                  <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">
+                    {botStatus?.isConnected ? 'WhatsApp Activo' :
+                     isConnecting ? 'Sincronizando...' : 'Desconectado'}
+                  </h3>
+
+                  <p className="text-slate-400 mb-8 max-w-[250px] mx-auto text-sm leading-relaxed">
+                    {botStatus?.isConnected ? 'Tu bot está patrullando los mares de WhatsApp' :
+                     isConnecting ? 'Esperando que escanees el código de acceso' :
+                     'El sistema requiere una conexión activa para funcionar'}
+                  </p>
+
                   <div className="space-y-4">
-                    <div className="flex justify-center space-x-4">
-                      <Badge className="bg-green-600 text-white">
-                        Método: {botStatus.connectionMethod || 'QR'}
-                      </Badge>
-                      <Badge className="bg-blue-600 text-white">
-                        Uptime: {Math.floor((botStatus.uptime || 0) / 60)}m
-                      </Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => disconnectMutation.mutate()}
-                        disabled={disconnectMutation.isPending}
-                        className="bg-red-600 hover:bg-red-700 text-white"
-                      >
-                        <i className="fas fa-power-off mr-2"></i>
-                        Desconectar
-                      </Button>
-                      <Button 
-                        onClick={() => restartMutation.mutate()}
-                        disabled={restartMutation.isPending}
-                        variant="outline"
-                        className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
-                      >
-                        🔄 Reiniciar
-                      </Button>
-                    </div>
+                    {botStatus?.isConnected ? (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex justify-center space-x-2">
+                          <Badge variant="outline" className="border-teal-500/50 text-teal-400 px-3">
+                            MODO: {botStatus.connectionMethod?.toUpperCase() || 'QR'}
+                          </Badge>
+                          <Badge variant="outline" className="border-blue-500/50 text-blue-400 px-3">
+                            ONLINE: {Math.floor((botStatus.uptime || 0) / 60)}m
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => disconnectMutation.mutate()}
+                            disabled={disconnectMutation.isPending}
+                            className="bg-red-600/20 text-red-400 border border-red-500/50 hover:bg-red-600 hover:text-white flex-1 font-bold"
+                          >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            DESCONECTAR
+                          </Button>
+                          <Button
+                            onClick={() => restartMutation.mutate()}
+                            disabled={restartMutation.isPending}
+                            variant="outline"
+                            className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500 hover:text-black shrink-0"
+                          >
+                            <RotateCw className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => connectMutation.mutate()}
+                          disabled={connectMutation.isPending || isConnecting}
+                          className="bg-teal-600 hover:bg-teal-700 text-white flex-1 font-bold shadow-lg shadow-teal-600/20 h-12"
+                        >
+                          {isConnecting ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              CONECTANDO...
+                            </>
+                          ) : (
+                            <>
+                              <Wifi className="w-4 h-4 mr-2" />
+                              INICIAR CONEXIÓN
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => restartMutation.mutate()}
+                          disabled={restartMutation.isPending}
+                          variant="outline"
+                          className="border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white shrink-0"
+                        >
+                          <RotateCw className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={() => connectMutation.mutate()}
-                      disabled={connectMutation.isPending || isConnecting}
-                      className="ocean-gradient text-white flex-1"
-                    >
-                      <Wifi className="w-4 h-4 mr-2" />
-                      {isConnecting ? 'Conectando...' : 'Conectar'}
-                    </Button>
-                    <Button 
-                      onClick={() => restartMutation.mutate()}
-                      disabled={restartMutation.isPending}
-                      variant="outline"
-                      className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
-                    >
-                      🔄
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Connection Methods */}
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Métodos de Conexión</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="qr" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-slate-700">
-                  <TabsTrigger value="qr" className="data-[state=active]:bg-slate-600">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-md overflow-hidden h-full">
+              <Tabs defaultValue="qr" className="w-full h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 rounded-none h-14 p-0">
+                  <TabsTrigger
+                    value="qr"
+                    className="data-[state=active]:bg-teal-600/20 data-[state=active]:text-teal-400 rounded-none h-full border-b-2 border-transparent data-[state=active]:border-teal-500"
+                  >
                     <QrCode className="w-4 h-4 mr-2" />
-                    Código QR
+                    CÓDIGO QR
                   </TabsTrigger>
-                  <TabsTrigger value="pin" className="data-[state=active]:bg-slate-600">
+                  <TabsTrigger
+                    value="pin"
+                    className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none h-full border-b-2 border-transparent data-[state=active]:border-blue-500"
+                  >
                     <Smartphone className="w-4 h-4 mr-2" />
-                    Código PIN
+                    CÓDIGO PIN
                   </TabsTrigger>
                 </TabsList>
 
                 {/* QR Code Tab */}
-                <TabsContent value="qr" className="space-y-4">
+                <TabsContent value="qr" className="p-6 flex-1 flex flex-col justify-center m-0">
                   <div className="text-center">
-                    <p className="text-slate-400 mb-4">
-                      Escanea el código QR desde WhatsApp Web en tu teléfono
+                    <p className="text-slate-400 mb-6 text-sm italic">
+                      Escanea el código con tu aplicación de WhatsApp
                     </p>
                     
-                    {botStatus?.qrCode ? (
-                      <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                        <img 
-                          src={botStatus.qrCode} 
-                          alt="QR Code" 
-                          className="w-64 h-64 mx-auto"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-64 h-64 mx-auto mb-4 bg-slate-700 rounded-lg flex items-center justify-center border-2 border-dashed border-slate-600">
-                        <div className="text-center">
-                          <QrCode className="w-16 h-16 text-slate-500 mx-auto mb-2" />
-                          <p className="text-slate-500">
-                            {isConnecting ? 'Generando QR...' : 'Sin código QR'}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                    <div className="relative group mx-auto mb-8 w-64 h-64">
+                      <AnimatePresence mode="wait">
+                        {botStatus?.qrCode ? (
+                          <motion.div
+                            key={botStatus.qrCode}
+                            initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                            exit={{
+                              opacity: 0,
+                              scale: 1.1,
+                              filter: "blur(20px)",
+                              clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 20% 20%, 80% 20%, 80% 80%, 20% 80%, 20% 20%)"
+                            }}
+                            transition={{ duration: 0.5, ease: "easeInOut" }}
+                            className="bg-white p-4 rounded-3xl shadow-2xl relative z-10"
+                          >
+                            <img
+                              src={botStatus.qrCode}
+                              alt="QR Code"
+                              className="w-full h-full rounded-lg"
+                            />
+                            {/* Decorative Frame */}
+                            <div className="absolute -inset-1 border-2 border-teal-500/30 rounded-[30px] -z-10 pointer-events-none group-hover:scale-105 transition-transform duration-500"></div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="placeholder"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="w-full h-full bg-slate-900/50 rounded-3xl flex items-center justify-center border-2 border-dashed border-slate-700 overflow-hidden relative"
+                          >
+                            <div className="text-center z-10">
+                              <QrCode className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+                              <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">
+                                {isConnecting ? 'Generando...' : 'Sin código'}
+                              </p>
+                            </div>
+                            {isConnecting && (
+                              <motion.div
+                                animate={{ y: [0, 256, 0] }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                className="absolute top-0 left-0 right-0 h-1 bg-teal-500/50 shadow-[0_0_15px_rgba(20,184,166,0.8)]"
+                              />
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <Button
                         onClick={() => refreshQRMutation.mutate()}
                         disabled={refreshQRMutation.isPending || !botStatus?.qrCode}
                         variant="outline"
-                        className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                        className="border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white w-full max-w-[200px]"
                       >
-                        <i className="fas fa-sync mr-2"></i>
-                        Actualizar QR
+                        <RefreshCw className={`w-4 h-4 mr-2 ${refreshQRMutation.isPending ? 'animate-spin' : ''}`} />
+                        ACTUALIZAR QR
                       </Button>
                       
-                      <div className="text-xs text-slate-500">
-                        El código QR expira automáticamente cada 2 minutos
+                      <div className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">
+                        El código caduca cada 60 segundos
                       </div>
                     </div>
                   </div>
                 </TabsContent>
 
                 {/* PIN Code Tab */}
-                <TabsContent value="pin" className="space-y-4">
-                  <div className="space-y-4">
+                <TabsContent value="pin" className="p-6 flex-1 flex flex-col m-0">
+                  <div className="space-y-6">
                     <div>
-                      <Label htmlFor="phoneNumber" className="text-slate-200">
-                        Número de teléfono (con código de país)
+                      <Label htmlFor="phoneNumber" className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-3 block">
+                        Número de Teléfono
                       </Label>
-                      <Input
-                        id="phoneNumber"
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="Ej: +5212345678901"
-                        className="bg-slate-700 border-slate-600 text-white mt-2"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">
-                        Incluye el código de país sin espacios ni guiones
+                      <div className="relative">
+                        <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <Input
+                          id="phoneNumber"
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          placeholder="Ej: +521234567890"
+                          className="bg-slate-900/50 border-slate-700 text-white pl-10 h-12 focus:border-blue-500/50 focus:ring-0 transition-colors"
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-2 italic">
+                        * Incluye el código de país sin espacios ni símbolos
                       </p>
                     </div>
 
@@ -322,106 +394,94 @@ export default function Connect() {
                         }
                       }}
                       disabled={!phoneNumber.trim() || requestPairingMutation.isPending}
-                      className="w-full ocean-gradient text-white"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 shadow-lg shadow-blue-600/20"
                     >
-                      <Smartphone className="w-4 h-4 mr-2" />
-                      {requestPairingMutation.isPending ? 'Generando...' : 'Generar Código PIN'}
+                      {requestPairingMutation.isPending ? 'PROCESANDO...' : 'GENERAR PIN'}
                     </Button>
 
-                    {pairingCode && (
-                      <div className="bg-slate-700 p-4 rounded-lg border border-slate-600">
-                        <div className="text-center">
-                          <Label className="text-slate-200 text-sm">
-                            Código de Vinculación
-                          </Label>
-                          <div className="flex items-center justify-center space-x-2 mt-2">
-                            <code className="text-2xl font-mono bg-slate-800 px-4 py-2 rounded border text-green-400">
-                              {pairingCode}
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                navigator.clipboard.writeText(pairingCode);
-                                toast({
-                                  title: "Copiado",
-                                  description: "Código copiado al portapapeles",
-                                });
-                              }}
-                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
+                    <AnimatePresence>
+                      {pairingCode && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-slate-900/80 p-6 rounded-2xl border border-blue-500/30 backdrop-blur-md mt-4"
+                        >
+                          <div className="text-center">
+                            <Label className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-4 block">
+                              CÓDIGO DE ENLACE
+                            </Label>
+                            <div className="flex items-center justify-center space-x-3 mb-6">
+                              <code className="text-3xl font-black font-mono text-white tracking-widest px-6 py-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                                {pairingCode}
+                              </code>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(pairingCode);
+                                  toast({
+                                    title: "Copiado",
+                                    description: "Código copiado al portapapeles",
+                                  });
+                                }}
+                                className="text-slate-400 hover:text-white"
+                              >
+                                <Copy className="w-5 h-5" />
+                              </Button>
+                            </div>
+                            <div className="text-[10px] text-slate-500 leading-relaxed text-left space-y-1">
+                              <p>1. Abre WhatsApp → Dispositivos Vinculados</p>
+                              <p>2. Toca "Vincular con número de teléfono"</p>
+                              <p>3. Ingresa este código de 8 dígitos</p>
+                            </div>
                           </div>
-                          <div className="mt-3 text-xs text-slate-400">
-                            <p>1. Abre WhatsApp en tu teléfono</p>
-                            <p>2. Ve a Configuración → Dispositivos vinculados</p>
-                            <p>3. Toca "Vincular un dispositivo"</p>
-                            <p>4. Ingresa este código de 8 dígitos</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </TabsContent>
               </Tabs>
-            </CardContent>
-          </Card>
+            </Card>
+          </motion.div>
         </div>
 
         {/* Instructions */}
-        <Card className="bg-slate-800 border-slate-700 mt-8">
-          <CardHeader>
-            <CardTitle className="text-white">
-              <i className="fas fa-info-circle mr-2 text-blue-400"></i>
-              Instrucciones de Conexión
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-3">
-                  📱 Método QR Code
-                </h4>
-                <ol className="text-sm text-slate-300 space-y-2">
-                  <li>1. Abre WhatsApp en tu teléfono</li>
-                  <li>2. Ve a Configuración → Dispositivos vinculados</li>
-                  <li>3. Toca "Vincular un dispositivo"</li>
-                  <li>4. Escanea el código QR mostrado arriba</li>
-                  <li>5. El bot se conectará automáticamente</li>
-                </ol>
-              </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-3">
-                  🔢 Método Código PIN
-                </h4>
-                <ol className="text-sm text-slate-300 space-y-2">
-                  <li>1. Ingresa tu número con código de país</li>
-                  <li>2. Haz clic en "Generar Código PIN"</li>
-                  <li>3. Abre WhatsApp en tu teléfono</li>
-                  <li>4. Ve a Configuración → Dispositivos vinculados</li>
-                  <li>5. Ingresa el código de 8 dígitos generado</li>
-                </ol>
-              </div>
-            </div>
-
-            <div className="mt-6 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <i className="fas fa-lightbulb text-yellow-400 mt-1"></i>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8"
+        >
+          <Card className="bg-slate-800/30 border-slate-700/50 border-dashed backdrop-blur-sm overflow-hidden">
+            <CardContent className="p-6">
+              <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <h5 className="text-white font-medium">Consejos:</h5>
-                  <ul className="text-sm text-slate-300 mt-2 space-y-1">
-                    <li>• El código PIN es más conveniente para conexiones remotas</li>
-                    <li>• El código QR es más rápido si tienes el teléfono cerca</li>
-                    <li>• Ambos métodos son igualmente seguros</li>
-                    <li>• El bot recordará la conexión una vez vinculado</li>
+                  <h4 className="text-white font-bold text-sm mb-4 flex items-center">
+                    <span className="w-6 h-6 bg-teal-500/20 text-teal-400 rounded-lg flex items-center justify-center text-xs mr-2 italic">1</span>
+                    VÍA CÓDIGO QR
+                  </h4>
+                  <ul className="text-xs text-slate-400 space-y-2 font-medium">
+                    <li className="flex items-center"><span className="w-1 h-1 bg-slate-600 rounded-full mr-2"></span> Abre WhatsApp en tu dispositivo</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-slate-600 rounded-full mr-2"></span> Menú &gt; Dispositivos Vinculados</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-slate-600 rounded-full mr-2"></span> Escanea el código mostrado</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-bold text-sm mb-4 flex items-center">
+                    <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center text-xs mr-2 italic">2</span>
+                    VÍA CÓDIGO PIN
+                  </h4>
+                  <ul className="text-xs text-slate-400 space-y-2 font-medium">
+                    <li className="flex items-center"><span className="w-1 h-1 bg-slate-600 rounded-full mr-2"></span> Ingresa tu número internacional</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-slate-600 rounded-full mr-2"></span> Recibe el PIN de 8 caracteres</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-slate-600 rounded-full mr-2"></span> Introdúcelo en la notificación de WhatsApp</li>
                   </ul>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
