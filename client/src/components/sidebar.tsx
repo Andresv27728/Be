@@ -47,8 +47,6 @@ export default function Sidebar() {
   const navItems = [
     { path: "/dashboard", label: "Dashboard", icon: "fas fa-chart-line", protected: false },
     { path: "/connect", label: "Conexión", icon: "fas fa-wifi", protected: false },
-    { path: "/chat", label: "Mensajes", icon: "fas fa-comments", protected: true },
-    { path: "/admin", label: "Administración", icon: "fas fa-terminal", protected: true },
   ];
 
   return (

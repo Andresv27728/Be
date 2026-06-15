@@ -317,22 +317,6 @@ class CleanWhatsAppBot extends EventEmitter implements WhatsAppBot {
           response = `🦈 **${botConfig.botInfo.name} v${botConfig.botInfo.version}**\n\n📱 Estado: Conectado\n🤖 Descripción: ${botConfig.botInfo.description}\n👨‍💻 Desarrollado por: ${botConfig.botInfo.author}\n📝 Prefijos: ${botConfig.prefixes.join(', ')}`;
           break;
 
-        case 'dados':
-          const diceCount = Math.min(parseInt(args[0]) || 1, 6);
-          const results = Array.from({ length: diceCount }, () => Math.floor(Math.random() * 6) + 1);
-          const diceEmojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-          response = `🎲 **Lanzando ${diceCount} dado(s)** 🎲\n\nResultados: ${results.map(r => diceEmojis[r-1]).join(' ')}\nTotal: ${results.reduce((a, b) => a + b, 0)}`;
-          break;
-
-        case 'moneda':
-          const coin = Math.random() < 0.5 ? 'Cara' : 'Cruz';
-          response = `🪙 **Lanzando moneda** 🪙\n\nResultado: **${coin}** ${coin === 'Cara' ? '👤' : '❌'}`;
-          break;
-
-        case 'perfil':
-          response = `👤 **Tu Perfil** 👤\n\n📱 Número: ${userId}\n⭐ Nivel: 1\n🎯 XP: 0\n🏆 Rango: Miembro\n📅 Registrado: Hoy`;
-          break;
-
         default:
           response = `🦈 Comando "${command}" no encontrado.\n💡 Usa /help para ver comandos disponibles.\n📝 Prefijos válidos: ${botConfig.prefixes.join(', ')}`;
       }
