@@ -18,7 +18,7 @@ export const botConfig = {
     name: 'Gawr Gura Bot',
     version: '2.1.0',
     description: 'Bot avanzado de WhatsApp con tema Gawr Gura',
-    author: 'Replit Team',
+    author: 'Yo Soy Yo',
   },
   
   // APIs gratuitas para descargas
@@ -48,120 +48,10 @@ export const botConfig = {
       description: 'Información del bot',
       category: 'general',
     },
-    dados: {
-      aliases: ['dice', 'roll'],
-      description: 'Lanza dados (1-6)',
-      category: 'juegos',
-    },
-    moneda: {
-      aliases: ['coin', 'flip'],
-      description: 'Lanza una moneda',
-      category: 'juegos',
-    },
     menu: {
       aliases: ['inicio', 'start'],
       description: 'Muestra el menú principal',
       category: 'general',
-    },
-    clima: {
-      aliases: ['weather', 'tiempo'],
-      description: 'Obtiene información del clima',
-      category: 'utilidades',
-    },
-    meme: {
-      aliases: ['memes', 'random'],
-      description: 'Genera un meme aleatorio',
-      category: 'diversión',
-    },
-    traducir: {
-      aliases: ['translate', 'tr'],
-      description: 'Traduce texto a otro idioma',
-      category: 'utilidades',
-    },
-    calc: {
-      aliases: ['calculadora', 'math'],
-      description: 'Calcula operaciones matemáticas',
-      category: 'utilidades',
-    },
-    ytdl: {
-      aliases: ['youtube', 'yt', 'download'],
-      description: 'Descarga audio/video de YouTube',
-      category: 'descargas',
-    },
-    tiktok: {
-      aliases: ['tt', 'tik'],
-      description: 'Descarga videos de TikTok',
-      category: 'descargas',
-    },
-    instagram: {
-      aliases: ['ig', 'insta'],
-      description: 'Descarga videos/fotos de Instagram',
-      category: 'descargas',
-    },
-    twitter: {
-      aliases: ['x', 'tweet'],
-      description: 'Descarga videos de Twitter/X',
-      category: 'descargas',
-    },
-    facebook: {
-      aliases: ['fb'],
-      description: 'Descarga videos de Facebook',
-      category: 'descargas',
-    },
-    perfil: {
-      aliases: ['profile', 'yo'],
-      description: 'Muestra tu perfil de usuario',
-      category: 'usuario',
-    },
-    registro: {
-      aliases: ['reg', 'register'],
-      description: 'Registra tu perfil en el bot',
-      category: 'usuario',
-    },
-    top: {
-      aliases: ['ranking', 'leaderboard'],
-      description: 'Muestra el ranking de usuarios',
-      category: 'usuario',
-    },
-    trivia: {
-      aliases: ['pregunta', 'quiz'],
-      description: 'Inicia un juego de trivia',
-      category: 'juegos',
-    },
-    adivinanza: {
-      aliases: ['guess', 'adivina'],
-      description: 'Juego de adivinanzas',
-      category: 'juegos',
-    },
-    bola8: {
-      aliases: ['8ball', 'pregunta'],
-      description: 'Pregunta a la bola mágica',
-      category: 'diversión',
-    },
-    cita: {
-      aliases: ['quote', 'frase'],
-      description: 'Muestra una cita inspiradora',
-      category: 'diversión',
-    },
-    gato: {
-      aliases: ['cat', 'kitty'],
-      description: 'Muestra una imagen de gato',
-      category: 'diversión',
-    },
-    perro: {
-      aliases: ['dog', 'puppy'],
-      description: 'Muestra una imagen de perro',
-      category: 'diversión',
-    },
-    musica: {
-      aliases: ['music', 'song'],
-      description: 'Busca información de música',
-      category: 'entretenimiento',
-    },
-    horario: {
-      aliases: ['time', 'hora'],
-      description: 'Muestra la hora actual',
-      category: 'utilidades',
     },
   }
 };
@@ -189,38 +79,28 @@ export function extractCommand(text: string): { prefix: string; command: string;
 // Función para formatear la lista de comandos
 export function formatCommandList(): string {
   const categories = new Set(Object.values(botConfig.commands).map(cmd => cmd.category));
-  let helpText = `🦈 **${botConfig.botInfo.name} v${botConfig.botInfo.version}** 🦈\n\n`;
-  helpText += `📝 **Prefijos disponibles:** ${botConfig.prefixes.join(', ')}\n\n`;
+  let helpText = `╔═══════════════════╗\n`;
+  helpText += `║  🦈 **${botConfig.botInfo.name}** 🦈  ║\n`;
+  helpText += `╚═══════════════════╝\n\n`;
+  helpText += `📝 **Prefijos:** ${botConfig.prefixes.join(' ')}\n\n`;
   
   categories.forEach(category => {
     const categoryCommands = Object.entries(botConfig.commands)
       .filter(([_, cmd]) => cmd.category === category);
     
     if (categoryCommands.length > 0) {
-      // Usar emojis específicos para cada categoría
-      const categoryEmojis: Record<string, string> = {
-        'general': '📋',
-        'juegos': '🎮',
-        'utilidades': '🛠️',
-        'descargas': '📥',
-        'diversión': '🎭',
-        'entretenimiento': '🎵'
-      };
-      
-      const emoji = categoryEmojis[category] || '📂';
-      helpText += `${emoji} **${category.toUpperCase()}:**\n`;
+      helpText += `✨ **MENÚ PRINCIPAL** ✨\n`;
       
       categoryCommands.forEach(([name, cmd]) => {
-        helpText += `• ${botConfig.defaultPrefix}${name} - ${cmd.description}\n`;
-        if (cmd.aliases.length > 0) {
-          helpText += `   └ Alias: ${cmd.aliases.map(alias => `${botConfig.defaultPrefix}${alias}`).join(', ')}\n`;
-        }
+        helpText += `> ⚡ *${botConfig.defaultPrefix}${name}*\n`;
+        helpText += `  └ ${cmd.description}\n`;
       });
       helpText += '\n';
     }
   });
   
-  helpText += `🌊 ¡Usa cualquier prefijo para ejecutar comandos, chum!`;
+  helpText += `👤 **Prop: ${botConfig.botInfo.author}**\n`;
+  helpText += `🌊 ¡Disfruta del bot, chum!`;
   return helpText;
 }
 
