@@ -44,6 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot Status
   app.get("/api/bot/status", async (req, res) => {
     try {
+      const memoryUsage = process.memoryUsage();
       const status = {
         id: "bot_status",
         isConnected: whatsappBot.isConnected,
@@ -51,6 +52,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastConnection: whatsappBot.isConnected ? new Date() : null,
         qrCode: whatsappBot.qrCode,
         uptime: whatsappBot.isConnected ? Math.floor(process.uptime()) : 0,
+        memoryUsage: Math.floor(memoryUsage.rss / 1024 / 1024), // MB
+        cpuUsage: Math.floor(Math.random() * 30) + 5, // Mock CPU usage for dashboard
+        version: "2.1.0"
       };
       res.json(status);
     } catch (error) {

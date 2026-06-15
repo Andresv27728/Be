@@ -1,14 +1,16 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { BotStatus } from "@shared/schema";
-import { Lock } from "lucide-react";
+import { Lock, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Sidebar() {
   const [location] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { data: botStatus } = useQuery<BotStatus>({
     queryKey: ["/api/bot/status"],
@@ -39,8 +41,7 @@ export default function Sidebar() {
     };
 
     checkAuth();
-    const interval = setInterval(checkAuth, 30000); // Verificar cada 30 segundos
-    
+    const interval = setInterval(checkAuth, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -49,105 +50,168 @@ export default function Sidebar() {
     { path: "/connect", label: "Conexión", icon: "fas fa-wifi", protected: false },
   ];
 
-  return (
-    <div className="w-64 h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-600 flex flex-col shadow-2xl">
+  const sidebarVariants = {
+    expanded: { width: "256px" },
+    collapsed: { width: "80px" }
+  };
+
+  const NavContent = () => (
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-slate-600 bg-gradient-to-r from-teal-600 to-blue-600">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white border-opacity-30">
-            <span className="text-white font-bold text-lg">🦈</span>
+      <div className={`p-4 border-b border-white/10 bg-gradient-to-r from-teal-600 to-blue-600 transition-all duration-300 ${isCollapsed ? 'items-center' : ''}`}>
+        <div className="flex items-center space-x-3 overflow-hidden">
+          <div className="min-w-[48px] w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 shrink-0">
+            <span className="text-white font-bold text-xl">🦈</span>
           </div>
-          <div>
-            <h1 className="text-white font-bold text-lg">Gawr Gura Bot</h1>
-            <p className="text-teal-100 text-xs font-medium">WhatsApp Dashboard v2.1</p>
-          </div>
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="whitespace-nowrap"
+            >
+              <h1 className="text-white font-black text-lg tracking-tight">GURA BOT</h1>
+              <p className="text-teal-100 text-[10px] font-bold uppercase tracking-widest">System v2.1</p>
+            </motion.div>
+          )}
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <div className="space-y-3">
-          {navItems.map((item) => {
-            const isActive = location === item.path || (location === "/" && item.path === "/dashboard");
-            const canAccess = !item.protected || isAuthenticated;
-            
-            return (
-              <Link key={item.path + item.label} href={item.path}>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 relative transition-all duration-200 rounded-xl ${
-                    isActive 
-                      ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg transform scale-105" 
-                      : canAccess
-                        ? "text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105 hover:shadow-md"
-                        : "text-slate-500 opacity-60 cursor-not-allowed"
-                  }`}
-                  disabled={!canAccess}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
-                    isActive ? "bg-white bg-opacity-20" : "bg-slate-600"
-                  }`}>
-                    <i className={`${item.icon} text-sm`}></i>
-                  </div>
-                  <span className="font-medium">{item.label}</span>
-                  {item.protected && !isAuthenticated && (
-                    <Lock className="w-4 h-4 ml-auto text-slate-400" />
-                  )}
-                </Button>
-              </Link>
-            );
-          })}
-        </div>
+      <nav className="flex-1 p-4 space-y-4">
+        {navItems.map((item) => {
+          const isActive = location === item.path || (location === "/" && item.path === "/dashboard");
+          const canAccess = !item.protected || isAuthenticated;
 
-        {/* Indicador de autenticación */}
-        {!isAuthenticated && (
-          <div className="mt-6 p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center space-x-2 mb-2">
-              <div className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center">
-                <Lock className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-amber-300 font-semibold">Acceso Limitado</span>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Algunas funciones requieren autenticación de administrador.
-            </p>
-          </div>
-        )}
-
-        {isAuthenticated && (
-          <div className="mt-6 p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/40 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center space-x-2 mb-1">
-              <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-              </div>
-              <span className="text-sm text-green-300 font-semibold">Administrador</span>
-            </div>
-            <p className="text-xs text-slate-300">
-              Acceso completo habilitado
-            </p>
-          </div>
-        )}
+          return (
+            <Link key={item.path} href={item.path}>
+              <Button
+                variant="ghost"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`w-full justify-start h-12 px-0 relative transition-all duration-200 rounded-xl overflow-hidden group ${
+                  isActive
+                    ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                } ${!canAccess ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={!canAccess}
+              >
+                <div className={`min-w-[48px] h-full flex items-center justify-center transition-transform group-hover:scale-110 ${
+                  isActive ? "text-white" : "text-slate-400"
+                }`}>
+                  <i className={`${item.icon} text-lg`}></i>
+                </div>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="font-bold text-sm whitespace-nowrap"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+                {item.protected && !isAuthenticated && !isCollapsed && (
+                  <Lock className="w-3 h-3 ml-auto mr-4 text-slate-500" />
+                )}
+              </Button>
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* Connection Status */}
-      <div className="p-4 border-t border-slate-600 bg-slate-800/50">
-        <div className="bg-gradient-to-r from-slate-700 to-slate-600 p-4 rounded-xl">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-slate-300 uppercase tracking-wider font-semibold">Estado del Bot</span>
-            <div className={`w-3 h-3 rounded-full animate-pulse ${
-              botStatus?.isConnected ? 'bg-green-400 shadow-green-400/50 shadow-lg' : 'bg-red-400 shadow-red-400/50 shadow-lg'
+      {/* Status Info */}
+      <div className={`p-4 border-t border-white/5 bg-slate-950/20 transition-all duration-300 ${isCollapsed ? 'items-center' : ''}`}>
+        <div className={`flex flex-col gap-3 ${isCollapsed ? 'items-center' : ''}`}>
+          <div className="flex items-center justify-between w-full">
+            <div className={`w-3 h-3 rounded-full animate-pulse shrink-0 ${
+              botStatus?.isConnected ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]'
             }`}></div>
+            {!isCollapsed && (
+              <span className="text-[10px] text-slate-500 font-black uppercase tracking-tighter">Status</span>
+            )}
           </div>
-          <div className="text-sm text-white font-medium mb-2">
-            {botStatus?.isConnected ? '🦈 WhatsApp Conectado' : '❌ Desconectado'}
-          </div>
-          {botStatus?.isConnected && (
-            <div className="text-xs text-slate-300 bg-slate-600/50 px-2 py-1 rounded-lg">
-              ⏱️ Uptime: {Math.floor((botStatus.uptime || 0) / 3600)}h {Math.floor(((botStatus.uptime || 0) % 3600) / 60)}m
-            </div>
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-1"
+            >
+              <div className="text-xs text-white font-bold truncate">
+                {botStatus?.isConnected ? 'SHARK ONLINE' : 'SHARK OFFLINE'}
+              </div>
+              {botStatus?.isConnected && (
+                <div className="text-[10px] text-teal-500 font-mono">
+                  UP: {Math.floor((botStatus.uptime || 0) / 3600)}h {Math.floor(((botStatus.uptime || 0) % 3600) / 60)}m
+                </div>
+              )}
+            </motion.div>
           )}
         </div>
       </div>
+
+      {/* Collapse Toggle (Desktop only) */}
+      <div className="hidden md:block p-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full justify-center text-slate-500 hover:text-white hover:bg-slate-800"
+        >
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </Button>
+      </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 z-50">
+        <div className="flex items-center space-x-2">
+          <span className="text-2xl">🦈</span>
+          <span className="text-white font-black tracking-tighter">GURA BOT</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="text-white"
+        >
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </Button>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={isCollapsed ? "collapsed" : "expanded"}
+        variants={sidebarVariants}
+        className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-white/10 shadow-2xl relative z-40 transition-all duration-300 ease-in-out"
+      >
+        <NavContent />
+      </motion.aside>
+
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-72 bg-slate-900 shadow-2xl z-50 md:hidden"
+            >
+              <NavContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

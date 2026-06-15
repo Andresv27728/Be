@@ -88,7 +88,7 @@ export const botStatus = pgTable("bot_status", {
   uptime: integer("uptime").default(0), // seconds
   memoryUsage: integer("memory_usage").default(0), // MB
   cpuUsage: integer("cpu_usage").default(0), // percentage
-  version: text("version").default("2.0.1"),
+  version: text("version").default("2.1.0"),
   qrCode: text("qr_code"),
   pinCode: text("pin_code"),
 });
