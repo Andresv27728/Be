@@ -131,16 +131,16 @@ export default function Connect() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-8 bg-slate-900 min-h-screen">
+      <div className="flex-1 p-8 bg-transparent min-h-screen">
         <div className="max-w-4xl mx-auto">
-          <Skeleton className="h-96 w-full bg-slate-800 rounded-3xl" />
+          <Skeleton className="h-96 w-full bg-white/5 rounded-3xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 bg-slate-900 min-h-screen">
+    <div className="flex-1 p-4 md:p-8 bg-transparent min-h-screen">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -159,9 +159,10 @@ export default function Connect() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
           >
-            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-md h-full">
+            <Card className="bg-white/5 border-white/10 backdrop-blur-xl h-full shadow-2xl overflow-hidden group">
               <CardHeader>
                 <CardTitle className="text-white flex items-center text-lg uppercase tracking-wider">
                   <div className={`w-3 h-3 rounded-full mr-3 ${
@@ -268,9 +269,10 @@ export default function Connect() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
           >
-            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-md overflow-hidden h-full">
+            <Card className="bg-white/5 border-white/10 backdrop-blur-xl overflow-hidden h-full shadow-2xl">
               <Tabs defaultValue="qr" className="w-full h-full flex flex-col">
                 <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 rounded-none h-14 p-0">
                   <TabsTrigger

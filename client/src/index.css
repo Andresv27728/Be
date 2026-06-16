@@ -110,23 +110,35 @@
 
 @layer utilities {
   .animate-wave {
-    animation: wave 2s ease-in-out infinite;
+    animation: wave 4s ease-in-out infinite;
   }
 
   .animate-float {
-    animation: float 3s ease-in-out infinite;
+    animation: float 6s ease-in-out infinite;
   }
 
   .animate-pulse-blue {
     animation: pulse-blue 2s ease-in-out infinite;
   }
 
+  .animate-bubble {
+    animation: bubble 10s infinite ease-in-out;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .bg-grid-white {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='white' stroke-opacity='0.03' stroke-width='1'%3E%3Cpath d='M0 .5H31.5V32'/%3E%3C/svg%3E");
+  }
+
   @keyframes wave {
     0%, 100% { 
-      transform: translateY(0px); 
+      transform: translateY(0px) rotate(0deg);
     }
     50% { 
-      transform: translateY(-10px); 
+      transform: translateY(-15px) rotate(1deg);
     }
   }
 
@@ -135,19 +147,48 @@
       transform: translateY(0px) rotate(0deg); 
     }
     33% { 
-      transform: translateY(-5px) rotate(1deg); 
+      transform: translateY(-10px) rotate(2deg);
     }
     66% { 
-      transform: translateY(-3px) rotate(-1deg); 
+      transform: translateY(-5px) rotate(-2deg);
     }
   }
 
   @keyframes pulse-blue {
     0%, 100% { 
-      box-shadow: 0 0 0 0 rgba(77, 144, 226, 0.7); 
+      box-shadow: 0 0 0 0 rgba(77, 144, 226, 0.4);
     }
     50% { 
       box-shadow: 0 0 0 20px rgba(77, 144, 226, 0); 
+    }
+  }
+
+  @keyframes bubble {
+    0% {
+      transform: translateY(100vh) scale(0);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.5;
+    }
+    50% {
+      transform: translateY(50vh) scale(1.2) translateX(20px);
+    }
+    80% {
+      opacity: 0.5;
+    }
+    100% {
+      transform: translateY(-10vh) scale(1) translateX(-20px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes glow {
+    from {
+      text-shadow: 0 0 10px rgba(77, 144, 226, 0.5), 0 0 20px rgba(77, 144, 226, 0.3);
+    }
+    to {
+      text-shadow: 0 0 20px rgba(77, 144, 226, 0.8), 0 0 30px rgba(77, 144, 226, 0.5);
     }
   }
 }
