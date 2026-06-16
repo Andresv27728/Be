@@ -29,14 +29,14 @@ export default function Dashboard() {
 
   if (statusLoading) {
     return (
-      <div className="flex-1 p-8 bg-slate-900 min-h-screen">
-        <Skeleton className="h-32 w-full bg-slate-800 mb-8 rounded-2xl" />
+      <div className="flex-1 p-8 bg-transparent min-h-screen">
+        <Skeleton className="h-32 w-full bg-white/5 mb-8 rounded-2xl" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Skeleton className="h-32 bg-slate-800 rounded-2xl" />
-          <Skeleton className="h-32 bg-slate-800 rounded-2xl" />
-          <Skeleton className="h-32 bg-slate-800 rounded-2xl" />
+          <Skeleton className="h-32 bg-white/5 rounded-2xl" />
+          <Skeleton className="h-32 bg-white/5 rounded-2xl" />
+          <Skeleton className="h-32 bg-white/5 rounded-2xl" />
         </div>
-        <Skeleton className="h-96 w-full bg-slate-800 rounded-2xl" />
+        <Skeleton className="h-96 w-full bg-white/5 rounded-2xl" />
       </div>
     );
   }
@@ -60,23 +60,23 @@ export default function Dashboard() {
       initial="hidden"
       animate="show"
       variants={container}
-      className="flex-1 p-4 md:p-8 bg-slate-900 min-h-screen"
+      className="flex-1 p-4 md:p-8 bg-transparent min-h-screen"
     >
       {/* Header */}
       <motion.div variants={item} className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-white mb-2 tracking-tight flex items-center">
-            <span className="mr-3">🦈</span> GAWR GURA BOT
+          <h1 className="text-4xl font-black text-white mb-2 tracking-tight flex items-center animate-glow">
+            <span className="mr-3 filter drop-shadow-[0_0_10px_rgba(77,144,226,0.5)]">🦈</span> GAWR GURA BOT
           </h1>
-          <p className="text-slate-400 flex items-center">
-            <Activity className="w-4 h-4 mr-2 text-teal-400" />
+          <p className="text-slate-400 flex items-center font-medium">
+            <Activity className="w-4 h-4 mr-2 text-teal-400 animate-pulse" />
             Panel de Control del Sistema
           </p>
         </div>
 
         <Badge className={`${
           botStatus?.isConnected ? 'bg-green-600/20 text-green-400 border-green-500/50' : 'bg-red-600/20 text-red-400 border-red-500/50'
-        } px-4 py-2 text-sm font-bold shadow-lg border backdrop-blur-md`}>
+        } px-4 py-2 text-sm font-bold shadow-[0_0_20px_rgba(0,0,0,0.3)] border backdrop-blur-xl transition-all duration-500`}>
           <div className={`w-2 h-2 rounded-full mr-2 ${
             botStatus?.isConnected ? 'bg-green-400' : 'bg-red-400'
           } animate-pulse`}></div>
@@ -86,59 +86,41 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm overflow-hidden group hover:border-teal-500/50 transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm font-medium mb-1">Tiempo Activo</p>
-                <h3 className="text-2xl font-bold text-white font-mono">
-                  {botStatus?.uptime ? formatUptime(botStatus.uptime) : '0h 0m 0s'}
-                </h3>
-              </div>
-              <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Clock className="text-teal-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm overflow-hidden group hover:border-blue-500/50 transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm font-medium mb-1">Uso de Memoria</p>
-                <h3 className="text-2xl font-bold text-white font-mono">
-                  {botStatus?.memoryUsage || 0} MB
-                </h3>
-              </div>
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <HardDrive className="text-blue-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm overflow-hidden group hover:border-purple-500/50 transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm font-medium mb-1">Carga de CPU</p>
-                <h3 className="text-2xl font-bold text-white font-mono">
-                  {botStatus?.cpuUsage || 0}%
-                </h3>
-              </div>
-              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Cpu className="text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {[
+          { label: 'Tiempo Activo', value: botStatus?.uptime ? formatUptime(botStatus.uptime) : '0h 0m 0s', icon: Clock, color: 'teal' },
+          { label: 'Uso de Memoria', value: `${botStatus?.memoryUsage || 0} MB`, icon: HardDrive, color: 'blue' },
+          { label: 'Carga de CPU', value: `${botStatus?.cpuUsage || 0}%`, icon: Cpu, color: 'purple' },
+        ].map((stat, idx) => (
+          <motion.div
+            key={stat.label}
+            whileHover={{ y: -5, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Card className={`bg-white/5 border-white/10 backdrop-blur-md overflow-hidden group hover:border-${stat.color}-500/50 transition-all duration-500 shadow-xl`}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">{stat.label}</p>
+                    <h3 className="text-2xl font-black text-white font-mono tracking-tight">
+                      {stat.value}
+                    </h3>
+                  </div>
+                  <div className={`w-14 h-14 bg-${stat.color}-500/10 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-${stat.color}-500/20 transition-all duration-500`}>
+                    <stat.icon className={`text-${stat.color}-400 w-7 h-7`} />
+                  </div>
+                </div>
+              </CardContent>
+              {/* Decorative line */}
+              <div className={`h-1 w-full bg-gradient-to-r from-transparent via-${stat.color}-500/50 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700`} />
+            </Card>
+          </motion.div>
+        ))}
       </motion.div>
 
       {/* Commands Section */}
       <motion.div variants={item} className="max-w-4xl mx-auto">
-        <Card className="bg-slate-800/80 border-2 border-teal-500/20 shadow-2xl overflow-hidden rounded-2xl backdrop-blur-md">
-          <CardHeader className="bg-gradient-to-r from-teal-600/30 to-blue-600/30 p-6 border-b border-teal-500/20">
+        <Card className="bg-slate-900/40 border-2 border-teal-500/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden rounded-3xl backdrop-blur-xl">
+          <CardHeader className="bg-gradient-to-r from-teal-600/20 to-blue-600/20 p-6 border-b border-white/5">
             <CardTitle className="text-white text-2xl flex items-center justify-center font-black italic tracking-widest uppercase">
               <Terminal className="mr-3 text-teal-400" />
               Lista de Comandos
@@ -164,23 +146,33 @@ export default function Dashboard() {
                 <span className="w-8 h-[2px] bg-blue-500/20"></span>
               </div>
 
-              <div className="space-y-4 md:space-y-6">
+              <motion.div
+                className="space-y-4 md:space-y-6"
+                variants={{
+                  show: {
+                    transition: {
+                      staggerChildren: 0.1
+                    }
+                  }
+                }}
+              >
                 {commands.map((cmd) => (
                   <motion.div
                     key={cmd.name}
-                    whileHover={{ x: 10 }}
-                    className="group hover:bg-slate-900/50 p-4 rounded-xl transition-all duration-300 border border-transparent hover:border-teal-500/20 cursor-default"
+                    variants={item}
+                    whileHover={{ x: 10, backgroundColor: "rgba(255,255,255,0.03)" }}
+                    className="group p-4 rounded-xl transition-all duration-300 border border-transparent hover:border-teal-500/20 cursor-default"
                   >
                     <div className="text-yellow-400 font-bold text-xl md:text-2xl flex items-center">
                       <span className="text-teal-500 mr-3 opacity-0 group-hover:opacity-100 transition-opacity">●</span>
                       <span className="text-teal-400 mr-2">$</span> {cmd.name}
                     </div>
-                    <div className="text-slate-400 ml-8 md:ml-10 mt-2 text-sm md:text-base leading-relaxed italic border-l-2 border-slate-800 pl-4">
+                    <div className="text-slate-400 ml-8 md:ml-10 mt-2 text-sm md:text-base leading-relaxed italic border-l-2 border-white/5 pl-4">
                       {cmd.description}
                     </div>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               <div className="mt-12 pt-6 border-t border-slate-800/50 flex flex-col items-center">
                 <div className="text-slate-500 text-xs mb-4 uppercase tracking-[0.2em]">

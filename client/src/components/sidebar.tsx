@@ -56,9 +56,9 @@ export default function Sidebar() {
   };
 
   const NavContent = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-slate-950/40 backdrop-blur-xl">
       {/* Header */}
-      <div className={`p-4 border-b border-white/10 bg-gradient-to-r from-teal-600 to-blue-600 transition-all duration-300 ${isCollapsed ? 'items-center' : ''}`}>
+      <div className={`p-4 border-b border-white/10 bg-gradient-to-r from-teal-600/80 to-blue-600/80 transition-all duration-300 ${isCollapsed ? 'items-center' : ''}`}>
         <div className="flex items-center space-x-3 overflow-hidden">
           <div className="min-w-[48px] w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 shrink-0">
             <span className="text-white font-bold text-xl">🦈</span>
@@ -184,7 +184,7 @@ export default function Sidebar() {
         initial={false}
         animate={isCollapsed ? "collapsed" : "expanded"}
         variants={sidebarVariants}
-        className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-white/10 shadow-2xl relative z-40 transition-all duration-300 ease-in-out"
+        className="hidden md:flex flex-col h-screen bg-slate-950/40 border-r border-white/10 shadow-2xl relative z-40 transition-all duration-300 ease-in-out backdrop-blur-xl"
       >
         <NavContent />
       </motion.aside>
