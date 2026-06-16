@@ -178,7 +178,7 @@ export default function Connect() {
                     transition={isConnecting ? { repeat: Infinity, duration: 2, ease: "linear" } : {}}
                     className={`w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 ${
                       botStatus?.isConnected ? 'bg-green-500/20 text-green-400' : isConnecting ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
-                    } border border-current transition-colors duration-500`}
+                  } border-2 animate-rgb transition-colors duration-500`}
                   >
                     {botStatus?.isConnected ? (
                       <Wifi className="w-10 h-10" />
