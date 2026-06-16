@@ -76,7 +76,7 @@ export default function Dashboard() {
 
         <Badge className={`${
           botStatus?.isConnected ? 'bg-green-600/20 text-green-400 border-green-500/50' : 'bg-red-600/20 text-red-400 border-red-500/50'
-        } px-4 py-2 text-sm font-bold shadow-[0_0_20px_rgba(0,0,0,0.3)] border backdrop-blur-xl transition-all duration-500`}>
+        } px-4 py-2 text-sm font-bold shadow-[0_0_20px_rgba(0,0,0,0.3)] border-2 animate-rgb backdrop-blur-xl transition-all duration-500`}>
           <div className={`w-2 h-2 rounded-full mr-2 ${
             botStatus?.isConnected ? 'bg-green-400' : 'bg-red-400'
           } animate-pulse`}></div>
@@ -96,7 +96,7 @@ export default function Dashboard() {
             whileHover={{ y: -5, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Card className={`bg-white/5 border-white/10 backdrop-blur-md overflow-hidden group hover:border-${stat.color}-500/50 transition-all duration-500 shadow-xl`}>
+            <Card className={`bg-white/5 border-white/10 backdrop-blur-md overflow-hidden group hover:border-${stat.color}-500/50 transition-all duration-500 shadow-xl hover:shadow-${stat.color}-500/10`}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
