@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { Cpu, HardDrive, Clock, Terminal, Activity } from "lucide-react";
+import AnalogClock from "@/components/analog-clock";
 
 const container = {
   hidden: { opacity: 0 },
@@ -86,17 +87,40 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Uptime Stat with Analog Clock */}
+        <motion.div
+          whileHover={{ y: -5, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <Card className="bg-white/5 border-white/10 backdrop-blur-md overflow-hidden group hover:border-teal-500/50 transition-all duration-500 shadow-xl hover:shadow-teal-500/10 h-full">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Tiempo Activo</p>
+                  <h3 className="text-2xl font-black text-white font-mono tracking-tight">
+                    {botStatus?.uptime ? formatUptime(botStatus.uptime) : '0h 0m 0s'}
+                  </h3>
+                </div>
+                <div className="flex items-center justify-center scale-75 md:scale-100">
+                  <AnalogClock uptimeSeconds={botStatus?.uptime || 0} />
+                </div>
+              </div>
+            </CardContent>
+            <div className="h-1 w-full bg-gradient-to-r from-transparent via-teal-500/50 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
+          </Card>
+        </motion.div>
+
+        {/* Other Stats */}
         {[
-          { label: 'Tiempo Activo', value: botStatus?.uptime ? formatUptime(botStatus.uptime) : '0h 0m 0s', icon: Clock, color: 'teal' },
           { label: 'Uso de Memoria', value: `${botStatus?.memoryUsage || 0} MB`, icon: HardDrive, color: 'blue' },
           { label: 'Carga de CPU', value: `${botStatus?.cpuUsage || 0}%`, icon: Cpu, color: 'purple' },
-        ].map((stat, idx) => (
+        ].map((stat) => (
           <motion.div
             key={stat.label}
             whileHover={{ y: -5, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Card className={`bg-white/5 border-white/10 backdrop-blur-md overflow-hidden group hover:border-${stat.color}-500/50 transition-all duration-500 shadow-xl hover:shadow-${stat.color}-500/10`}>
+            <Card className={`bg-white/5 border-white/10 backdrop-blur-md overflow-hidden group hover:border-${stat.color}-500/50 transition-all duration-500 shadow-xl hover:shadow-${stat.color}-500/10 h-full`}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
